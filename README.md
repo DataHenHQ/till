@@ -57,7 +57,7 @@ Till will log your requests based on if it's a successful request (2XX status co
 Till will cache all your HTTP responses (and their contents) locally, so that when you need run your scraper again, Till will reuse the same cached response and contents without needing do an actual request to the target server. You can even specify the freshness criteria of the cached contents to use. If the cache is outside of your freshness criteria, Till will send a real request to the target server and store that in the cache. 
 
 ### Unique Request Identifier 
-Till uses [DataHen platform](https://www.datahen.com/platform)'s convention of marking every request with a unique signature (we call this the Global ID, or GID for short). Every request that is sent through Till, will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or contents in the cache.
+Till uses [DataHen Scrape Platform](https://www.datahen.com/platform)'s convention of marking every request with a unique signature (we call this the Global ID, or GID for short). Every request that is sent through Till, will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or contents in the cache.
 
 
 ## How it works
