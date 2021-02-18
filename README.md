@@ -15,7 +15,7 @@ Till is designed primarily to increase developer happiness, and to follow best p
 Web scraping is easy to get started, but proved to be very difficult to master at scale. Scraping 10,000 records, can easily be done with a simple web scraper scripts in any language, but imagine trying to scrape millions or even billions of pages. You would need to to architect and build features that allows you to unblock, scale and maintain your scrapers. 
 
 
-The following problems related to scaling are what DataHen Till solves:
+The following problems related to scaling are what **DataHen Till** solves:
 
 ### Blocked scraper
 As you try to scale up the number of requests, quite often, the target websites will try to block your requests using Captcha, or throttling, or denying your request completely.
