@@ -12,7 +12,7 @@ Till is designed primarily to increase developer happiness, and to follow best p
 ## Problems with Web Scraping
 
 
-Web scraping is easy to get started, but proved to be very difficult to master at scale. Scraping 10,000 records, can easily be done with a simple web scraper scripts in any language, but imagine trying to scrape millions or even billions of records. You would need to to architect and build features that allows you to unblock, scale and maintain your scrapers. 
+Web scraping is easy to get started, but proved to be very difficult to master at scale. Scraping 10,000 records, can easily be done with a simple web scraper scripts in any language, but imagine trying to scrape millions or even billions of pages. You would need to to architect and build features that allows you to unblock, scale and maintain your scrapers. 
 
 
 The following problems related to scaling are what DataHen Till solves:
@@ -47,7 +47,7 @@ You don't have to write the retry logic in your scraper code, Till will retry yo
 No need to build your own cookie management logic in your scraper codes. Till stores the cookies for you so that you can easily set and get the cookies on any request.
 
 ### User-Agent randomizer 
-Till automatically generates random user-agent on every requests. Choose to identify your scraper as a desktop browser, or a mobile browser, or you can even override it with your own custom user-agent.
+Till automatically generates random user-agent on every request. Choose to identify your scraper as a desktop browser, or a mobile browser, or you can even override it with your own custom user-agent.
 
 ### Proxy IP address rotation
 Supply a list of proxy IPs, and Till will randomly use them on every request. Saves you time in needing to setup a separate proxy rotation service.
@@ -55,10 +55,34 @@ Supply a list of proxy IPs, and Till will randomly use them on every request. Sa
 ### Advanced Logging
 Till will log your requests based on if it's a successful request (2XX status code) or failed request (non 2XX status code). This will allow you to easily troubleshoot your scraper later. You can also export the log in the [HAR](https://en.wikipedia.org/wiki/HAR_(file_format)) format, and you can open this in your Chrome's (or other browsers) inspector tool.
 
-### Unique Request Identifier 
-Till uses [DataHen platform](https://www.datahen.com/platform)'s convention of marking every request with a unique signature (we call this the Global ID, or GID for short). Every request that is sent through Till, will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or the request content in the local cache.
+### HTTP Response caching
+Till will cache all your HTTP responses (and their contents) locally, so that when you need run your scraper again, Till will reuse the same cached response and contents without needing do an actual request to the target server. You can even specify the freshness criteria of the cached contents to use. If the cache is outside of your freshness criteria, Till will send a real request to the target server and store that in the cache. 
 
-### Request-Response caching
-Till will cache all your requests and responses (and their contents) locally, so that when you need run your scraper again, Till will reuse the same cached response and contents without needing do an actual request to the target server. You can even specify the freshness criteria of the cached contents to use. If the cache is outside of your freshness criteria, Till will send a real request to the target server and store that in the Cache. 
+### Unique Request Identifier 
+Till uses [DataHen platform](https://www.datahen.com/platform)'s convention of marking every request with a unique signature (we call this the Global ID, or GID for short). Every request that is sent through Till, will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or contents in the cache.
+
 
 ## How it works
+
+Till runs as a standalone application that listens to incoming requests and proxies that requests to the target server as needed. While it does so, it logs and caches the requests.
+
+Connect your scraper to Till via the `proxy` protocol that are typically common in any programming language.
+
+Your scraper will then continue to run as-is and it will get instantly become more unblockable, scalable and maintainable.
+
+
+## Usage
+
+After installing, start Till with the following command
+```bash
+$ till start # this will run Till in port 2933
+```
+
+After you have started Till, your scraper code can then connect to Till via the `proxy` protocol.
+### Curl
+
+To connect using Curl, you can do the following
+
+```bash
+$ curl --proxy http://localhost:2933 https://fetchtest.datahen.com/echo/request
+```
