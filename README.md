@@ -1,5 +1,4 @@
 # DataHen Till
-[![Gitter](https://img.shields.io/gitter/room/DataHenHQ/till?logo=gitter&style=for-the-badge)](https://gitter.im/DataHenHQ/till)
 
 <img align="left" width="70" height="70" style="padding:0 12px 0 0;" src="img/icons8-spade.svg"> **DataHen Till** is a standalone tool that runs alongside your web scraper, and instantly makes your existing web scraper unblockable, scalable, and maintainable, without requiring any code changes on your scraper code. 
 
@@ -27,7 +26,7 @@ More thoughts are needed, such as:
 - File system load
 - etc.
 
-Although Till does not solve all of your scaling needs related to your specific use case, but Till provides a plug-and-play method of making your web scrapers with best practices when it comes to scaling web scrapers. These best practices includes, logging HTTP requests, caching HTTP requests and reusing them as needed, Randomizing user agents, and proxies, and also making your scraper code troubleshooting and maintenance a pleasant experience. 
+Although Till does not solve all of your scaling needs related to your specific use case, but Till provides a plug-and-play method of making your web scrapers with best practices when it comes to scaling web scrapers. These best practices include, logging HTTP requests, caching HTTP requests and reusing them as needed, Randomizing user agents, and proxies, and also making your scraper code troubleshooting and maintenance a pleasant experience. 
 
 ### Blocked scraper
 As you try to scale up the number of requests, quite often, the target websites will often detect that you are web scraping and try to block your requests using Captcha, or throttling, or denying your request completely.
@@ -68,7 +67,9 @@ Till will log your requests based on if it's a successful request (2XX status co
 Till will cache all your HTTP responses (and their contents) locally, so that when you need run your scraper again, Till will reuse the same cached response and contents without needing do an actual request to the target server. You can even specify the freshness criteria of the cached contents to use. If the cache is outside of your freshness criteria, Till will send a real request to the target server and store that in the cache. 
 
 ### Global Identifier (GID) for every unique request
-Till uses [DataHen Scrape Platform](https://www.datahen.com/platform)'s convention of marking every unique request with a signature (we call this the Global ID, or GID for short). Think of it like a Checksum of the actual request. Every request that is sent through Till, will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or contents in the cache.
+Till uses [DataHen Scrape Platform](https://www.datahen.com/platform)'s convention of marking every unique request with a signature (we call this the Global ID, or GID for short). Think of it like a Checksum of the actual request. Every request that is sent through 
+
+Anytime your scraper sends a request through Till, it will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up a specific requests in the log, or contents in the cache.
 
 
 ## How it works
