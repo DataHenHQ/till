@@ -72,20 +72,72 @@ Till uses [DataHen Scrape Platform](https://www.datahen.com/platform)'s conventi
 Anytime your scraper sends a request through Till, it will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up specific requests in the log, or contents in the cache.
 
 
-## How it works
+## How DataHen Till works
 
-Till runs as a standalone application that listens to incoming requests and proxies that request to the target server as needed. While it does so, it logs and caches the requests.
+Till works as a Man In The Middle (MITM) proxy that listens to incoming HTTP(S) requests and forwards those requests to the target server as needed. While it does so, it enhances each request to increase unblockability. It also logs and caches the responses to make your scraper maintainable and scalable.
 
 Connect your scraper to Till via the `proxy` protocol that is typically common in any programming language.
 
 Your scraper will then continue to run as-is and it will get instantly become more unblockable, scalable, and maintainable.
 
+### Proxying TLS (SSL) requests.
+Because Till acts as a Man In The Middle (MITM) proxy for your HTTPS requests and modifies both the request and responses, Till cann
+
+ Certificate Authority (CA)
+
+
+
+## Installation
+
+The recommended way to install DataHen Till is by downloading the standalone binaries on [this link](https://github.com/DataHenHQ/till/releases).
+
+
+## Certificate Authority (CA) Certificates
+Till decripts and encrypts HTTPS traffic on the fly between your scraper and the target websites.  In order to do so, your scraper (or browser) must be able to trust the built-in Certificate Authority (CA). This means, the CA certificates that Till generates for you needs to be installed on the computer where the scraper is running.
+
+**Note:** If you do not wish to install the CA certificates, you can still have your scraper connect to the Till server by disabling/ignoring security checks in your scraper. Please refer to the programming language/framework/tool that your scraper uses.
+
+### Installing the generated CA certificates onto your computer
+The first time Till runs as a server, Till generates the CA certificates in the following directory: 
+
+Linux or MacOS:
+```
+~/.config/datahen/till/cert/
+```
+
+Windows:
+```
+%APPDATA%/datahen/till/cert
+```
+Then, please follow the following instructions to install the CA certificates:
+#### MacOS
+
+[Add certificates to a keychain using Keychain Access on Mac](https://support.apple.com/en-ca/guide/keychain-access/kyca2431/mac)
+
+#### Ubuntu/Debian
+[How do I install a root certificate](https://askubuntu.com/questions/73287/how-do-i-install-a-root-certificate/94861#94861)
+
+#### Mozilla Firefox
+[how to import the Mozilla Root Certificate into your Firefox web browser](https://wiki.mozilla.org/MozillaRootCertificate#Mozilla_Firefox)
+
+#### Chrome
+[Getting Chrome to accept self-signed localhost certificate](https://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate/15076602#15076602)
+
+#### Windows
+Use `certutil` with the following command:
+
+```
+certutil -addstore root <path to your CA cert file>
+```
+
+Read more about [certutil](https://web.archive.org/web/20160612045445/http://windows.microsoft.com/en-ca/windows/import-export-certificates-private-keys#1TC=windows-7)
 
 ## Usage
 
-After installing, start Till with the following command
+
+After installing, start the Till server with the following command
 ```bash
-$ till start # this will run Till in port 2933
+$ till serve # this will run Till in port 2933
 ```
 
 After you have started Till, your scraper code can then connect to Till via the `proxy` protocol.
@@ -94,5 +146,5 @@ After you have started Till, your scraper code can then connect to Till via the 
 To connect using Curl, you can do the following
 
 ```bash
-$ curl --proxy http://localhost:2933 https://fetchtest.datahen.com/echo/request
+$ curl -k --proxy http://localhost:2933 https://fetchtest.datahen.com/echo/request
 ```
