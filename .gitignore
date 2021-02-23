@@ -15,3 +15,4 @@
 # vendor/
 
 .vscode
+__debug_bin
