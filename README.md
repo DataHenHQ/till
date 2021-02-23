@@ -26,7 +26,7 @@ More thoughts are needed, such as:
 - File system load
 - etc.
 
-Although Till does not try to solve all of your scaling needs related to your specific use case, Till provides a plug-and-play method of making your web scrapers with best practices when it comes to scaling web scrapers. These best practices include logging HTTP requests, caching HTTP requests and reusing them as needed, Randomizing user agents, and proxies, and also making your scraper code troubleshooting and maintenance a pleasant experience. 
+Although Till does not try to solve all of your scaling needs, Till provides a plug-and-play method of making your web scrapers with best practices when it comes to scaling web scrapers. These best practices include logging HTTP requests, caching HTTP requests and reusing them as needed, Randomizing user agents, and proxies, and also making your scraper code troubleshooting and maintenance a pleasant experience. 
 
 ### Blocked scraper
 As you try to scale up the number of requests, quite often, the target websites will often detect that you are web scraping and try to block your requests using Captcha, or throttling, or denying your request completely.
@@ -79,12 +79,6 @@ Till works as a Man In The Middle (MITM) proxy that listens to incoming HTTP(S) 
 Connect your scraper to Till via the `proxy` protocol that is typically common in any programming language.
 
 Your scraper will then continue to run as-is and it will get instantly become more unblockable, scalable, and maintainable.
-
-### Proxying TLS (SSL) requests.
-Because Till acts as a Man In The Middle (MITM) proxy for your HTTPS requests and modifies both the request and responses, Till cann
-
- Certificate Authority (CA)
-
 
 
 ## Installation
@@ -143,7 +137,7 @@ $ till serve # this will run Till in port 2933
 After you have started Till, your scraper code can then connect to Till via the `proxy` protocol.
 ### Curl
 
-To connect using Curl, you can do the following
+To connect using Curl, you can do the following:
 
 ```bash
 $ curl -k --proxy http://localhost:2933 https://fetchtest.datahen.com/echo/request
