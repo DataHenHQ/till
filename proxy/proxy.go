@@ -2,8 +2,8 @@ package proxy
 
 import (
 	"crypto/tls"
-	"errors"
-	"fmt"
+	"crypto/x509"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -14,32 +14,33 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
+var (
+	ca       tls.Certificate
+	okHeader = []byte("HTTP/1.1 200 OK\r\n\r\n")
+)
+
+func init() {
+	loadCAVar()
+}
+
+// Generates geenrates the certificate authority var
+func loadCAVar() {
+	certPEM, keyPEM, err := GenCA("till")
+	if err != nil {
+		log.Fatalln("Unable to generate CA", err)
+	}
+	ca, err = tls.X509KeyPair(certPEM, keyPEM)
+	if err == nil {
+		ca.Leaf, err = x509.ParseCertificate(ca.Certificate[0])
+	}
+	return
+
+}
+
 // ProxyURLs is the current configuration of this proxy
 var ProxyURLs []string
 
-// HandleHTTP proxies the request from source to target
-func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
-	// Hijack the source connection
-	sconn, _, err := sw.(http.Hijacker).Hijack()
-	if err != nil {
-		e := errors.New(fmt.Sprint("unable to hijack the source connection", sreq.Host, err))
-		return e
-	}
-	defer sconn.Close()
-
-	// Send request to target server
-	tresp, err := sendToTarget(sconn, sreq)
-	if err != nil {
-		return err
-	}
-	defer tresp.Body.Close()
-
-	// Write response back to the source connection
-	writeToSource(sconn, tresp)
-	return nil
-}
-
-func sendToTarget(sconn net.Conn, sreq *http.Request) (tresp *http.Response, err error) {
+func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *http.Response, err error) {
 	// create transport for client
 	t := &http.Transport{
 		Dial: (&net.Dialer{
@@ -81,9 +82,18 @@ func sendToTarget(sconn net.Conn, sreq *http.Request) (tresp *http.Response, err
 	if err != nil {
 		return nil, err
 	}
+	// build the target request
+	u := sreq.URL
+	u.Host = sreq.Host
+	u.Scheme = scheme
+	treq.URL = u
+	treq.Host = u.Host
 
 	// send the actual request to target server
 	tresp, err = tclient.Do(treq)
+	if err != nil {
+		return nil, err
+	}
 
 	return tresp, err
 }
@@ -98,4 +108,13 @@ func getRandom(s []string) string {
 	i := r.Intn(len(s))
 
 	return s[i]
+}
+
+// dnsName returns the DNS name in addr, if any.
+func dnsName(addr string) string {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return ""
+	}
+	return host
 }

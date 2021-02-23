@@ -18,7 +18,7 @@ func Serve(port string) {
 		WriteTimeout: 1 * time.Minute,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodConnect {
-				// handleTunneling(w, r)
+				proxy.HandleTunneling(w, r)
 			} else {
 				proxy.HandleHTTP(w, r)
 			}
