@@ -2,13 +2,14 @@ package proxy
 
 import (
 	"crypto/tls"
-	"crypto/x509"
-	"log"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
+	"path/filepath"
 	"time"
 
 	"golang.org/x/net/publicsuffix"
@@ -20,21 +21,8 @@ var (
 )
 
 func init() {
-	loadCAVar()
-}
-
-// Generates geenrates the certificate authority var
-func loadCAVar() {
-	certPEM, keyPEM, err := GenCA("till")
-	if err != nil {
-		log.Fatalln("Unable to generate CA", err)
-	}
-	ca, err = tls.X509KeyPair(certPEM, keyPEM)
-	if err == nil {
-		ca.Leaf, err = x509.ParseCertificate(ca.Certificate[0])
-	}
-	return
-
+	// loadCAVar()
+	// loadCAVarFromFile()
 }
 
 // ProxyURLs is the current configuration of this proxy
@@ -117,4 +105,22 @@ func dnsName(addr string) string {
 		return ""
 	}
 	return host
+}
+
+func createDirIfNotExist(dirpath string) (err error) {
+	if _, err := os.Stat(dirpath); os.IsNotExist(err) {
+		return os.MkdirAll(dirpath, os.ModeDir|0755)
+	}
+	return nil
+}
+
+// write the full filepath, also creates non existent directory if not exist
+func writeFullFilePath(fullpath string, data []byte, perm os.FileMode) (err error) {
+	dir := filepath.Dir(fullpath)
+	err = createDirIfNotExist(dir)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(fullpath, data, perm)
 }

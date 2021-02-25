@@ -12,7 +12,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
+	"os"
 	"time"
 )
 
@@ -104,4 +106,97 @@ func GenCA(name string) (certPEM, keyPEM []byte, err error) {
 	})
 
 	return
+}
+
+// LoadOrGenCAFiles loads CA from file, or generates it into a file and use it
+func LoadOrGenCAFiles(caCertFile, caKeyFile string) (err error) {
+	var (
+		caCertExists bool
+		caKeyExists  bool
+	)
+
+	// check existense of the cert and key files
+	if _, err := os.Stat(caCertFile); err == nil {
+		caCertExists = true
+	}
+	if _, err := os.Stat(caKeyFile); err == nil {
+		caKeyExists = true
+	}
+
+	// if both files exist, load from file
+	if caCertExists && caKeyExists {
+		err = loadCAVarFromFile(caCertFile, caKeyFile)
+		if err != nil {
+			return err
+		}
+		// loading certs message
+		fmt.Println("Using the following Certificate Authority(CA) certificates:")
+		fmt.Println("-", caCertFile)
+		fmt.Println("-", caKeyFile)
+
+		return nil
+	}
+
+	// if both does not exist, generate the key pair
+	if !caCertExists && !caKeyExists {
+		err = genCAToFile(caCertFile, caKeyFile)
+		if err != nil {
+			return err
+		}
+		err = loadCAVarFromFile(caCertFile, caKeyFile)
+		if err != nil {
+
+		}
+		// generated certs message
+		fmt.Println("Generated a new Certificate Authority(CA) certificates:")
+		fmt.Println("-", caCertFile)
+		fmt.Println("-", caKeyFile)
+		return nil
+	}
+
+	// if one exist and not the other, then raise error
+	if !caCertExists {
+		log.Fatalln("ca-cert does not exist")
+	}
+	if !caKeyExists {
+		log.Fatalln("ca-key does not exist")
+	}
+
+	return nil
+}
+
+// loadCAVarFromFile loads the keypair from file
+func loadCAVarFromFile(caCertFile, caKeyFile string) (err error) {
+
+	ca, err = tls.LoadX509KeyPair(caCertFile, caKeyFile)
+	if err != nil {
+		return err
+	}
+
+	ca.Leaf, err = x509.ParseCertificate(ca.Certificate[0])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GenCAToFile generates the CA, and save it to files, and then use the ca
+func genCAToFile(caCertFile string, caKeyFile string) (err error) {
+	var hostname, _ = os.Hostname()
+
+	certPEM, keyPEM, err := GenCA(hostname)
+	if err != nil {
+		log.Fatalln("Unable to generate CA", err)
+	}
+
+	if err := writeFullFilePath(caCertFile, certPEM, 0644); err != nil {
+		log.Fatalln("Unable to write ca cert file to ", caCertFile)
+	}
+
+	if err := writeFullFilePath(caKeyFile, keyPEM, 0644); err != nil {
+		log.Fatalln("Unable to write ca cert file to ", caCertFile)
+	}
+
+	return nil
 }

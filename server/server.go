@@ -12,6 +12,8 @@ import (
 
 // Serve runs the Till server to start accepting the proxy requests
 func Serve(port string) {
+
+	// Start the server
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%v", port),
 		ReadTimeout:  1 * time.Minute,
