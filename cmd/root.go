@@ -60,7 +60,7 @@ func initConfig() {
 		}
 
 		// Search config in home directory with name ".till" (without extension).
-		home := filepath.Join(userhome, ".config/datahen/till")
+		home := filepath.Join(userhome, ".config", "datahen", "till")
 		viper.AddConfigPath(home)
 		viper.SetConfigName("config")
 	}

@@ -59,10 +59,10 @@ func setCaFileDefaults(caCertFile *string, caKeyFile *string) {
 	}
 
 	if *caCertFile == "" {
-		*caCertFile = filepath.Join(home, ".config/datahen/till/till-ca-cert.pem")
+		*caCertFile = filepath.Join(home, ".config", "datahen", "till", "till-ca-cert.pem")
 	}
 
 	if *caKeyFile == "" {
-		*caKeyFile = filepath.Join(home, ".config/datahen/till/till-ca-key.pem")
+		*caKeyFile = filepath.Join(home, ".config", "datahen", "till", "till-ca-key.pem")
 	}
 }
