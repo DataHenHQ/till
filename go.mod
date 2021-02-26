@@ -3,6 +3,7 @@ module github.com/DataHenHQ/till
 go 1.15
 
 require (
+	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1

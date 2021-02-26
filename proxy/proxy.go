@@ -2,6 +2,8 @@ package proxy
 
 import (
 	"crypto/tls"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -13,6 +15,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/DataHenHQ/useragent"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -94,7 +97,9 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *htt
 
 	// if ForceUA is true, then override User-Agent header with a random UA
 	if ForceUA {
-		generateRandomUA(th, UAType)
+		if err := generateRandomUA(th, UAType); err != nil {
+			return nil, err
+		}
 	}
 
 	// send the actual request to target server
@@ -128,9 +133,24 @@ func copySourceHeaders(sh http.Header) (th http.Header) {
 }
 
 // Overrides User-Agent header with a random one
-func generateRandomUA(h http.Header, uaType string) {
-	// TODO: replace with the real randomizer
-	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36")
+func generateRandomUA(h http.Header, uaType string) (err error) {
+	var ua string
+	switch uaType {
+	case "desktop":
+		ua, err = useragent.Desktop()
+		if err != nil {
+			return err
+		}
+	case "mobile":
+		ua = useragent.Mobile()
+	}
+
+	if ua == "" {
+		return errors.New(fmt.Sprint("generated empty user agent string for", uaType))
+	}
+
+	h.Set("User-Agent", ua)
+	return nil
 }
 
 func writeToSource(sconn net.Conn, tresp *http.Response) (err error) {
