@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"golang.org/x/net/publicsuffix"
@@ -18,6 +19,14 @@ import (
 var (
 	ca       tls.Certificate
 	okHeader = []byte("HTTP/1.1 200 OK\r\n\r\n")
+
+	// ForceUA indicates whether to overwrite all incoming user-agent with a random one
+	ForceUA = true
+
+	// UAType specifies what kind of user-agent to generate
+	UAType = "desktop"
+
+	dhHeadersRe = regexp.MustCompile(`(?i)^X-DH`)
 )
 
 func init() {
@@ -77,6 +86,17 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *htt
 	treq.URL = u
 	treq.Host = u.Host
 
+	// copy source headers into target headers
+	th := copySourceHeaders(sreq.Header)
+	if th != nil {
+		treq.Header = th
+	}
+
+	// if ForceUA is true, then override User-Agent header with a random UA
+	if ForceUA {
+		generateRandomUA(th, UAType)
+	}
+
 	// send the actual request to target server
 	tresp, err = tclient.Do(treq)
 	if err != nil {
@@ -84,6 +104,33 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *htt
 	}
 
 	return tresp, err
+}
+
+// copy source headers other than those that starts with X-DH* into target headers
+func copySourceHeaders(sh http.Header) (th http.Header) {
+	th = make(http.Header)
+
+	if sh == nil {
+		return nil
+	}
+
+	for key, values := range sh {
+		if dhHeadersRe.MatchString(key) {
+			continue
+		}
+
+		for _, val := range values {
+			th.Add(key, val)
+		}
+	}
+
+	return th
+}
+
+// Overrides User-Agent header with a random one
+func generateRandomUA(h http.Header, uaType string) {
+	// TODO: replace with the real randomizer
+	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36")
 }
 
 func writeToSource(sconn net.Conn, tresp *http.Response) (err error) {
