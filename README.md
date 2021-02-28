@@ -1,6 +1,6 @@
 # DataHen Till
 
-<img align="left" width="70" height="70" style="padding:0 12px 0 0;" src="img/icons8-spade.svg"> **DataHen Till** is a standalone tool that runs alongside your web scraper, and instantly makes your existing web scraper unblockable, scalable, and maintainable, without requiring any code changes on your scraper code. 
+<img align="left" width="150" style="padding:6px 23px 6px 0px;" src="img/till-logo.svg"> **DataHen Till** is a standalone tool that runs alongside your web scraper, and instantly makes your existing web scraper unblockable, scalable, and maintainable, without requiring any code changes on your scraper code. 
 
 Based on [DataHen](https://www.datahen.com)'s experience in almost a decade of scraping billions of pages from thousands of some of the top largest websites in the world, we realized that there's got to be a better way so that the typical developers can easily build web scrapers in their preferred programming language, and be able to scale their scrapers easily.
 
