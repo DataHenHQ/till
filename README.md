@@ -1,4 +1,3 @@
-# DataHen Till
 
 <img align="left" width="150" style="padding:6px 23px 6px 0px;" src="img/till-logo.svg"> **DataHen Till** is a standalone tool that runs alongside your web scraper, and instantly makes your existing web scraper unblockable, scalable, and maintainable, without requiring any code changes on your scraper code. 
 
