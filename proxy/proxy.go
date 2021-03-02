@@ -13,8 +13,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
+	"github.com/DataHenHQ/datahen/pages"
 	"github.com/DataHenHQ/useragent"
 	"golang.org/x/net/publicsuffix"
 )
@@ -39,6 +41,56 @@ func init() {
 
 // ProxyURLs is the current configuration of this proxy
 var ProxyURLs []string
+
+func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *pages.Page, err error) {
+	p = new(pages.Page)
+
+	u := r.URL
+	u.Host = r.Host
+	u.Scheme = scheme
+	p.SetURL(u.String())
+
+	p.SetMethod(r.Method)
+
+	// build the page headers
+	nh := map[string]interface{}{}
+	for name, values := range r.Header {
+		nh[name] = strings.Join(values, ",")
+	}
+
+	// remove User-Agent header if we force-user agent
+	if config.ForceUA {
+		delete(nh, "User-Agent")
+	}
+
+	// delete any other proxy related header
+	delete(nh, "Proxy-Connection")
+
+	// finally set the header
+	p.SetHeaders(nh)
+
+	// fetch type will always be "standard" for Till
+	p.FetchType = "standard"
+	p.UaType = config.UaType
+
+	// set the body
+	rBody, _ := ioutil.ReadAll(r.Body)
+	p.SetBody(string(rBody))
+
+	// set defaults
+	p.SetUaType(config.UaType)
+	p.SetFetchType("standard")
+	p.SetPageType("default")
+
+	// set the GID
+	gid, err := pages.GenerateGID(p)
+	if err != nil {
+		return nil, err
+	}
+	p.SetGID(gid)
+
+	return p, nil
+}
 
 func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *http.Response, err error) {
 	// create transport for client
@@ -94,6 +146,9 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *htt
 	if th != nil {
 		treq.Header = th
 	}
+
+	// Delete headers related to proxy usage
+	treq.Header.Del("Proxy-Connection")
 
 	// if ForceUA is true, then override User-Agent header with a random UA
 	if ForceUA {
@@ -153,7 +208,12 @@ func generateRandomUA(h http.Header, uaType string) (err error) {
 	return nil
 }
 
-func writeToSource(sconn net.Conn, tresp *http.Response) (err error) {
+func writeToSource(sconn net.Conn, tresp *http.Response, p *pages.Page) (err error) {
+	// add X-DH-GID to the response
+	if p != nil {
+		tresp.Header.Set("X-DH-GID", p.GetGID())
+	}
+
 	tresp.Write(sconn)
 	return nil
 }
@@ -190,4 +250,11 @@ func writeFullFilePath(fullpath string, data []byte, perm os.FileMode) (err erro
 	}
 
 	return ioutil.WriteFile(fullpath, data, perm)
+}
+
+func generatePageConfig() (conf *PageConfig) {
+	return &PageConfig{
+		ForceUA: ForceUA,
+		UaType:  UAType,
+	}
 }

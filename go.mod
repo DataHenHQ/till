@@ -1,14 +1,12 @@
 module github.com/DataHenHQ/till
 
-go 1.15
+go 1.16
 
 require (
-	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c // indirect
+	github.com/DataHenHQ/datahen v0.0.0-20210206012353-c71b87ce80de
+	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20200822124328-c89045814202
-	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6 // indirect
-	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/net v0.0.0-20201026091529-146b70c837a4
 )

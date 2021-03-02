@@ -17,14 +17,22 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 	defer sconn.Close()
 
+	// Generate the Page
+	pconf := generatePageConfig()
+	scheme := sreq.URL.Scheme
+	p, err := NewPageFromRequest(sreq, scheme, pconf)
+	if err != nil {
+		return err
+	}
+
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, sreq, "http")
+	tresp, err := sendToTarget(sconn, sreq, scheme)
 	if err != nil {
 		return err
 	}
 	defer tresp.Body.Close()
 
 	// Write response back to the source connection
-	writeToSource(sconn, tresp)
+	writeToSource(sconn, tresp, p)
 	return nil
 }

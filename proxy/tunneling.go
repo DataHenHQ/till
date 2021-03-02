@@ -46,15 +46,23 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 		log.Println(err)
 	}
 
+	// Generate the Page
+	pconf := generatePageConfig()
+	scheme := "https"
+	p, err := NewPageFromRequest(treq, scheme, pconf)
+	if err != nil {
+		return err
+	}
+
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, treq, "https")
+	tresp, err := sendToTarget(sconn, treq, scheme)
 	if err != nil {
 		return err
 	}
 	defer tresp.Body.Close()
 
 	// Write response back to the source connection
-	writeToSource(sconn, tresp)
+	writeToSource(sconn, tresp, p)
 	return nil
 }
 
