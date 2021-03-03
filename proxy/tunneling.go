@@ -55,7 +55,7 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, treq, scheme)
+	tresp, err := sendToTarget(sconn, treq, scheme, pconf)
 	if err != nil {
 		return err
 	}

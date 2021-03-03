@@ -5,13 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -32,15 +29,21 @@ var (
 	UAType = "desktop"
 
 	dhHeadersRe = regexp.MustCompile(`(?i)^X-DH`)
+
+	// ProxyFile points to the path of the txt file that contains a list of proxies
+	ProxyFile = ""
+
+	// ProxyURLs are external proxies that will be randomized
+	ProxyURLs = []string{}
+
+	// ProxyCount is the total count of proxies used.
+	ProxyCount int
 )
 
 func init() {
 	// loadCAVar()
 	// loadCAVarFromFile()
 }
-
-// ProxyURLs is the current configuration of this proxy
-var ProxyURLs []string
 
 func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *pages.Page, err error) {
 	p = new(pages.Page)
@@ -92,7 +95,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	return p, nil
 }
 
-func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *http.Response, err error) {
+func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, config *PageConfig) (tresp *http.Response, err error) {
 	// create transport for client
 	t := &http.Transport{
 		Dial: (&net.Dialer{
@@ -107,13 +110,14 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string) (tresp *htt
 	}
 
 	// set proxy if specified
-	if nproxies := len(ProxyURLs); nproxies > 0 {
+	if config.UseProxy {
 		// randomizes the proxy
 		u := getRandom(ProxyURLs)
 		p, err := url.Parse(u)
 		if err != nil {
-			t.Proxy = http.ProxyURL(p)
+			return nil, err
 		}
+		t.Proxy = http.ProxyURL(p)
 	}
 
 	// create cookiejar
@@ -216,45 +220,4 @@ func writeToSource(sconn net.Conn, tresp *http.Response, p *pages.Page) (err err
 
 	tresp.Write(sconn)
 	return nil
-}
-
-func getRandom(s []string) string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	i := r.Intn(len(s))
-
-	return s[i]
-}
-
-// dnsName returns the DNS name in addr, if any.
-func dnsName(addr string) string {
-	host, _, err := net.SplitHostPort(addr)
-	if err != nil {
-		return ""
-	}
-	return host
-}
-
-func createDirIfNotExist(dirpath string) (err error) {
-	if _, err := os.Stat(dirpath); os.IsNotExist(err) {
-		return os.MkdirAll(dirpath, os.ModeDir|0755)
-	}
-	return nil
-}
-
-// write the full filepath, also creates non existent directory if not exist
-func writeFullFilePath(fullpath string, data []byte, perm os.FileMode) (err error) {
-	dir := filepath.Dir(fullpath)
-	err = createDirIfNotExist(dir)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(fullpath, data, perm)
-}
-
-func generatePageConfig() (conf *PageConfig) {
-	return &PageConfig{
-		ForceUA: ForceUA,
-		UaType:  UAType,
-	}
 }

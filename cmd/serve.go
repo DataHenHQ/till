@@ -29,12 +29,31 @@ var serveCmd = &cobra.Command{
 		// Set UserAgent related settings
 		proxy.ForceUA = viper.GetBool("force-user-agent")
 		proxy.UAType = viper.GetString("ua-type")
-
-		// start the server
-		fmt.Println("Starting DataHen Till server on port", port)
 		if proxy.ForceUA {
 			fmt.Printf("Till is currently configured to override all User-Agent headers with random %v browsers\n", proxy.UAType)
 		}
+
+		// set the proxy-file
+		proxyFile := viper.GetString("proxy-file")
+		if proxyFile != "" {
+			count, err := proxy.LoadProxyFile(proxyFile)
+			if err != nil {
+				fmt.Println("Problem loading the proxy-file:", err)
+				fmt.Println("aborting server")
+				return
+			}
+			if count == 0 {
+				fmt.Println("The supplied proxy-file does not contain any proxies. Please supply a correct proxy-file")
+				fmt.Println("aborting server")
+				return
+			}
+			fmt.Printf("Using proxy-file to randomize through %d proxies: %v\n", count, proxyFile)
+		} else {
+			fmt.Println("Warning! No proxy-file supplied. You will be exposing your own IP address if you don't use Till with a proxy", proxyFile)
+		}
+
+		// start the server
+		fmt.Println("Starting DataHen Till server on port", port)
 		server.Serve(port)
 	},
 }
@@ -64,6 +83,11 @@ func init() {
 
 	serveCmd.Flags().String("ua-type", "desktop", "Specify what kind of browser user-agent to generate. Values can either be \"desktop\" or \"mobile\"")
 	if err := viper.BindPFlag("ua-type", serveCmd.Flags().Lookup("ua-type")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().String("proxy-file", "", "Specify the path to a txt file that contains a list of proxies")
+	if err := viper.BindPFlag("proxy-file", serveCmd.Flags().Lookup("proxy-file")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 }
