@@ -55,11 +55,14 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, treq, scheme, pconf)
+	tresp, err := sendToTarget(sconn, treq, scheme, p, pconf)
 	if err != nil {
 		return err
 	}
 	defer tresp.Body.Close()
+
+	// Write the request log
+	defer writeHarLog()
 
 	// Write response back to the source connection
 	writeToSource(sconn, tresp, p)

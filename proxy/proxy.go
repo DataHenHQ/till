@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/DataHenHQ/datahen/pages"
 	"github.com/DataHenHQ/useragent"
+	"github.com/google/martian/v3/har"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -38,11 +40,21 @@ var (
 
 	// ProxyCount is the total count of proxies used.
 	ProxyCount int
+
+	harlogger = har.NewLogger()
 )
 
 func init() {
 	// loadCAVar()
 	// loadCAVarFromFile()
+
+	// init har logger
+	harlogger.Export().Log.Creator.Name = "DataHen Till"
+	harlogger.Export().Log.Creator.Version = ""
+	harlogger.Export().Log.Version = ""
+
+	harlogger.SetOption(har.PostDataLogging(true))
+	harlogger.SetOption(har.BodyLogging(false))
 }
 
 func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *pages.Page, err error) {
@@ -76,8 +88,9 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	p.FetchType = "standard"
 	p.UaType = config.UaType
 
-	// set the body
+	// read the request body, save it and set it back to the request body
 	rBody, _ := ioutil.ReadAll(r.Body)
+	r.Body = ioutil.NopCloser(bytes.NewReader(rBody))
 	p.SetBody(string(rBody))
 
 	// set defaults
@@ -95,7 +108,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	return p, nil
 }
 
-func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, config *PageConfig) (tresp *http.Response, err error) {
+func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, config *PageConfig) (tresp *http.Response, err error) {
 	// create transport for client
 	t := &http.Transport{
 		Dial: (&net.Dialer{
@@ -133,8 +146,13 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, config *Pag
 		Jar:       jar,
 	}
 
+	// copy the body as *bytes.Reader to properly set the treq's body and content-length
+	srBody, _ := ioutil.ReadAll(sreq.Body)
+	sreq.Body = ioutil.NopCloser(bytes.NewReader(srBody))
+	p.SetBody(string(srBody))
+
 	// create target request
-	treq, err := http.NewRequestWithContext(sreq.Context(), sreq.Method, sreq.RequestURI, sreq.Body)
+	treq, err := http.NewRequestWithContext(sreq.Context(), sreq.Method, sreq.RequestURI, bytes.NewReader(srBody))
 	if err != nil {
 		return nil, err
 	}
@@ -161,9 +179,19 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, config *Pag
 		}
 	}
 
+	// record request to HAR
+	if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
+		return nil, err
+	}
+
 	// send the actual request to target server
 	tresp, err = tclient.Do(treq)
 	if err != nil {
+		return nil, err
+	}
+
+	// record response to HAR
+	if err := harlogger.RecordResponse(p.GetGID(), tresp); err != nil {
 		return nil, err
 	}
 
@@ -219,5 +247,6 @@ func writeToSource(sconn net.Conn, tresp *http.Response, p *pages.Page) (err err
 	}
 
 	tresp.Write(sconn)
+
 	return nil
 }

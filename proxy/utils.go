@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -66,4 +68,13 @@ func dnsName(addr string) string {
 		return ""
 	}
 	return host
+}
+
+func writeHarLog() {
+	if len(harlogger.Export().Log.Entries) > 0 {
+		h := harlogger.ExportAndReset()
+		if hj, err := json.Marshal(h); err == nil {
+			fmt.Println(string(hj))
+		}
+	}
 }
