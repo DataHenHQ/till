@@ -66,12 +66,12 @@ func init() {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
-	serveCmd.Flags().String("ca-cert", "", "Specify the CA certificate file (default is $HOME/.config/datahen/till/till-ca-cert.pem)")
+	serveCmd.Flags().String("ca-cert", "", fmt.Sprintf("Specify the CA certificate file (default is %v)", filepath.Join(tillHomeDir, "till-ca-cert.pem")))
 	if err := viper.BindPFlag("ca-cert", serveCmd.Flags().Lookup("ca-cert")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
-	serveCmd.Flags().String("ca-key", "", "Specify the CA certificate file (default is $HOME/.config/datahen/till/till-ca-key.pem)")
+	serveCmd.Flags().String("ca-key", "", fmt.Sprintf("Specify the CA certificate file (default is %v)", filepath.Join(tillHomeDir, "till-ca-key.pem")))
 	if err := viper.BindPFlag("ca-key", serveCmd.Flags().Lookup("ca-key")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
