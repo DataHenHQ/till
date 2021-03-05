@@ -45,14 +45,10 @@ var (
 )
 
 func init() {
-	// loadCAVar()
-	// loadCAVarFromFile()
 
 	// init har logger
 	harlogger.Export().Log.Creator.Name = "DataHen Till"
 	harlogger.Export().Log.Creator.Version = ""
-	harlogger.Export().Log.Version = ""
-
 	harlogger.SetOption(har.PostDataLogging(true))
 	harlogger.SetOption(har.BodyLogging(false))
 }
