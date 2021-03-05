@@ -12,7 +12,7 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
 
 .vscode
 __debug_bin
+dist
