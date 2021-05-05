@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/DataHenHQ/license"
+	"github.com/DataHenHQ/till/internal/tillclient"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,6 +16,8 @@ import (
 
 var cfgFile string
 var tillHomeDir string
+var BaseURL = "https://till.datahen.com/api/v1"
+var PubKey = "ca60c6f94f2ff9f030e4636e66e018fe4f930a16e8915920f390b9bcff9adf9f"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -28,6 +34,16 @@ without requiring any code changes on your scraper code.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	// set the base url
+	tillclient.BaseURL = BaseURL
+
+	// set the license's public key
+	decpubkey, err := hex.DecodeString(string(PubKey))
+	if err != nil {
+		log.Fatalln("could not decode public key:", PubKey)
+	}
+	license.PublicKey = decpubkey
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

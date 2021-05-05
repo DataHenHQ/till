@@ -19,7 +19,9 @@ var serveCmd = &cobra.Command{
 	Short: "Starts the DataHen Till server",
 	Long:  `Starts the DataHen Till server in order to listen to and receive HTTP requests and proxy them.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
 		port := viper.GetString("port")
+		proxy.ReleaseVersion = ReleaseVersion
 		// Load or generate a new CA cert files
 		caCertFile := viper.GetString("ca-cert")
 		caKeyFile := viper.GetString("ca-key")
@@ -32,6 +34,26 @@ var serveCmd = &cobra.Command{
 		if proxy.ForceUA {
 			fmt.Printf("Till is currently configured to override all User-Agent headers with random %v browsers\n", proxy.UAType)
 		}
+
+		// set the Token
+		token := viper.GetString("token")
+		if token == "" {
+			fmt.Println("You need to specify the Till auth token. To get your token, sign up for free at https://www.datahen.com/till")
+			fmt.Println("aborting server")
+			return
+		}
+		server.Token = token
+		proxy.Token = token
+
+		// set the instance name
+		instance := viper.GetString("instance")
+		if instance == "" {
+			fmt.Println("You need to specify the name of this Till instance.")
+			fmt.Println("aborting server")
+			return
+		}
+		server.Instance = instance
+		proxy.Instance = instance
 
 		// set the proxy-file
 		proxyFile := viper.GetString("proxy-file")
@@ -53,13 +75,23 @@ var serveCmd = &cobra.Command{
 		}
 
 		// start the server
-		fmt.Println("Starting DataHen Till server on port", port)
 		server.Serve(port)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
+
+	serveCmd.Flags().StringP("token", "t", "", "Specify the Till auth token. To get your token, sign up for free at https://www.datahen.com/till")
+	if err := viper.BindPFlag("token", serveCmd.Flags().Lookup("token")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+	// serveCmd.MarkFlagRequired("token")
+
+	serveCmd.Flags().StringP("instance", "i", "default", "Specify the name of the Till instance.")
+	if err := viper.BindPFlag("instance", serveCmd.Flags().Lookup("instance")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
 
 	serveCmd.Flags().StringP("port", "p", "2933", "Specify the port to run")
 	if err := viper.BindPFlag("port", serveCmd.Flags().Lookup("port")); err != nil {

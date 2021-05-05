@@ -1,4 +1,4 @@
-// Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+// Copyright © 2021 DataHen Canada Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ var (
 	version = ""
 	commit  = ""
 	date    = ""
+	baseurl = ""
+	pubkey  = ""
 )
 
 func main() {
@@ -33,6 +35,12 @@ func main() {
 	}
 	if date != "" {
 		cmd.ReleaseDate = date
+	}
+	if baseurl != "" {
+		cmd.BaseURL = baseurl
+	}
+	if pubkey != "" {
+		cmd.PubKey = pubkey
 	}
 	cmd.Execute()
 }

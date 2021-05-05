@@ -21,6 +21,12 @@ import (
 )
 
 var (
+	// Token is the Till auth token
+	Token string
+
+	// Instance is the name of this till instance
+	Instance string
+
 	ca       tls.Certificate
 	okHeader = []byte("HTTP/1.1 200 OK\r\n\r\n")
 
@@ -42,13 +48,16 @@ var (
 	ProxyCount int
 
 	harlogger = har.NewLogger()
+
+	// ReleaseVersion is the version of Till release
+	ReleaseVersion = "dev"
 )
 
 func init() {
 
 	// init har logger
 	harlogger.Export().Log.Creator.Name = "DataHen Till"
-	harlogger.Export().Log.Creator.Version = ""
+	harlogger.Export().Log.Creator.Version = "dev"
 	harlogger.SetOption(har.PostDataLogging(true))
 	harlogger.SetOption(har.BodyLogging(false))
 }

@@ -16,3 +16,5 @@
 .vscode
 __debug_bin
 dist
+
+.env.*
