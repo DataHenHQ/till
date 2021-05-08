@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,12 +25,17 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	// init the client
 	client, err := tillclient.NewClient(Token)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	i, _, err = client.Instances.Get(context.Background(), Instance)
 	if err != nil {
-		log.Panic(err)
+		if errors.Is(err, tillclient.ErrNotFound) {
+			log.Fatalf("Instance with the name '%v' is not found. Please create the instance at https://till.datahen.com/instances\n", Instance)
+		} else {
+			log.Fatal(err)
+		}
+		log.Fatal(err)
 	}
 
 	return true, i

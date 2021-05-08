@@ -1,6 +1,9 @@
 package tillclient
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type CustomError struct {
 	StatusCode int
@@ -11,3 +14,5 @@ type CustomError struct {
 func (r *CustomError) Error() string {
 	return fmt.Sprintf("status %v", r.Err)
 }
+
+var ErrNotFound = errors.New("not found")

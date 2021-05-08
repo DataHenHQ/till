@@ -49,6 +49,11 @@ func NewClient(token string) (c *Client, err error) {
 // a middleware that verifies the signature from the api response, and then replace it with the actual content data
 func verifySignature(c *resty.Client, resp *resty.Response) error {
 
+	// if error = 404 then return ErrNotFound
+	if resp.StatusCode() == 404 {
+		return ErrNotFound
+	}
+
 	// if error status code is more than 399, return an error
 	if resp.StatusCode() > 399 {
 		return &CustomError{
