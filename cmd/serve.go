@@ -38,7 +38,7 @@ var serveCmd = &cobra.Command{
 		// set the Token
 		token := viper.GetString("token")
 		if token == "" {
-			fmt.Println("You need to specify the Till auth token. To get your token, sign up for free at https://www.datahen.com/till")
+			fmt.Println("You need to specify the Till auth token. To get your token, sign up for free at https://till.datahen.com")
 			fmt.Println("aborting server")
 			return
 		}
@@ -86,7 +86,6 @@ func init() {
 	if err := viper.BindPFlag("token", serveCmd.Flags().Lookup("token")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
-	// serveCmd.MarkFlagRequired("token")
 
 	serveCmd.Flags().StringP("instance", "i", "default", "Specify the name of the Till instance.")
 	if err := viper.BindPFlag("instance", serveCmd.Flags().Lookup("instance")); err != nil {

@@ -24,8 +24,6 @@ func (s *InstancesService) Get(ctx context.Context, name string) (*Instance, *re
 	req, err := s.client.NewRequest(ctx, u, nil)
 
 	instance := new(Instance)
-	// req.SetDoNotParseResponse(true)
-	// req.SetResult(instance)
 
 	resp, err := req.Get(u)
 	if err != nil {
@@ -37,7 +35,6 @@ func (s *InstancesService) Get(ctx context.Context, name string) (*Instance, *re
 		return nil, nil, err
 	}
 
-	fmt.Println("raw resp body:", string(b))
 	json.Unmarshal(b, &instance)
 
 	return instance, resp, nil

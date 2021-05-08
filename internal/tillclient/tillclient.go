@@ -27,14 +27,6 @@ type Client struct {
 	Instances *InstancesService
 }
 
-// Client = resty.New().
-// 		SetTimeout(2 * time.Minute).
-// 		SetHostURL(coreAPIURL)
-
-// type Response struct {
-// 	resty.Response
-// }
-
 func NewClient(token string) (c *Client, err error) {
 
 	c = &Client{
@@ -91,62 +83,3 @@ func (c *Client) NewRequest(ctx context.Context, urlStr string, body interface{}
 
 	return req, nil
 }
-
-// func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-
-// 	if !strings.HasSuffix(c.BaseURL.Path, "/") {
-// 		return nil, fmt.Errorf("BaseURL must have a trailing slash, but %q does not", c.BaseURL)
-// 	}
-// 	u, err := c.BaseURL.Parse(urlStr)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var buf io.ReadWriter
-// 	if body != nil {
-// 		buf = &bytes.Buffer{}
-// 		enc := json.NewEncoder(buf)
-// 		enc.SetEscapeHTML(false)
-// 		err := enc.Encode(body)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-
-// 	req, err := http.NewRequest(method, u.String(), buf)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if body != nil {
-// 		req.Header.Set("Content-Type", "application/json")
-// 	}
-// 	// req.Header.Set("Accept", mediaTypeV3)
-
-// 	req.Header.Set("User-Agent", "Till-Client")
-
-// 	return req, nil
-// }
-
-// func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
-// 	resp, err := c.BareDo(ctx, req)
-// 	if err != nil {
-// 		return resp, err
-// 	}
-// 	defer resp.Body.Close()
-
-// 	switch v := v.(type) {
-// 	case nil:
-// 	case io.Writer:
-// 		_, err = io.Copy(v, resp.Body)
-// 	default:
-// 		decErr := json.NewDecoder(resp.Body).Decode(v)
-// 		if decErr == io.EOF {
-// 			decErr = nil // ignore EOF errors caused by empty response body
-// 		}
-// 		if decErr != nil {
-// 			err = decErr
-// 		}
-// 	}
-// 	return resp, err
-// }
