@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/DataHenHQ/datahen/pages"
+	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/useragent"
 	"github.com/google/martian/v3/har"
 	"golang.org/x/net/publicsuffix"
@@ -51,6 +52,8 @@ var (
 
 	// ReleaseVersion is the version of Till release
 	ReleaseVersion = "dev"
+
+	StatMu *tillclient.InstanceStatMutex
 )
 
 func init() {
@@ -254,4 +257,14 @@ func writeToSource(sconn net.Conn, tresp *http.Response, p *pages.Page) (err err
 	tresp.Write(sconn)
 
 	return nil
+}
+
+// Atomically increments request delta in the instance stat
+func incrRequestStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the requests counter
+	*(StatMu.InstanceStat.Requests) = *(StatMu.InstanceStat.Requests) + uint64(1)
+	StatMu.Mutex.Unlock()
+
 }

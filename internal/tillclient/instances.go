@@ -15,6 +15,7 @@ type Instance struct {
 	ID          *int64     `json:"id,omitempty"`
 	Name        *string    `json:"name,omitempty"`
 	Description *string    `json:"description,omitempty"`
+	Requests    *int64     `json:"requests,omitempty"`
 	CreatedAt   *Timestamp `json:"created_at,omitempty"`
 	UpdatedAt   *Timestamp `json:"updated_at,omitempty"`
 }
@@ -70,6 +71,14 @@ func (i *Instance) GetCreatedAt() Timestamp {
 		return Timestamp{}
 	}
 	return *i.CreatedAt
+}
+
+// GetRequests returns the Requests field if it's non-nil, zero value otherwise.
+func (i *Instance) GetRequests() int64 {
+	if i == nil || i.Requests == nil {
+		return 0
+	}
+	return *i.Requests
 }
 
 // GetUpdatedAt returns the UpdatedAt field if it's non-nil, zero value otherwise.

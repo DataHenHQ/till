@@ -24,7 +24,8 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
-	Instances *InstancesService
+	Instances     *InstancesService
+	InstanceStats *InstanceStatsService
 }
 
 func NewClient(token string) (c *Client, err error) {
@@ -42,6 +43,7 @@ func NewClient(token string) (c *Client, err error) {
 
 	// assigns the common service
 	c.Instances = (*InstancesService)(&c.common)
+	c.InstanceStats = (*InstanceStatsService)(&c.common)
 
 	return c, nil
 }

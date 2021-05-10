@@ -63,6 +63,7 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 
 	// Write the request log
 	defer writeHarLog()
+	defer incrRequestStatDelta()
 
 	// Write response back to the source connection
 	writeToSource(sconn, tresp, p)
