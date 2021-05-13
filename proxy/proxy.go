@@ -170,6 +170,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	u.Scheme = scheme
 	treq.URL = u
 	treq.Host = u.Host
+	treq.Close = true // important. need to close the connection to target as soon as reading was done
 
 	// copy source headers into target headers
 	th := copySourceHeaders(sreq.Header)
