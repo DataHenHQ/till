@@ -128,7 +128,12 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 		TLSHandshakeTimeout:   10 * time.Second,
 		ResponseHeaderTimeout: 60 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
+		MaxIdleConns:          1,
+		MaxIdleConnsPerHost:   1,
+		IdleConnTimeout:       1 * time.Millisecond,
+		MaxConnsPerHost:       1,
 	}
+	defer t.CloseIdleConnections()
 
 	// set proxy if specified
 	if config.UseProxy {
