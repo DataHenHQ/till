@@ -12,17 +12,19 @@ import (
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/till/proxy"
+	"github.com/DataHenHQ/tillup/interceptors"
 
 	"github.com/DataHenHQ/tillup"
 )
 
 var (
-	Token      string
-	Instance   string
-	StatMu     tillclient.InstanceStatMutex
-	ProxyURLs  = []string{}
-	ProxyCount = 0
-	DBPath     string
+	Token        string
+	Instance     string
+	StatMu       tillclient.InstanceStatMutex
+	ProxyURLs    = []string{}
+	ProxyCount   = 0
+	DBPath       string
+	Interceptors []interceptors.Interceptor
 )
 
 func validateInstance() (ok bool, i *tillclient.Instance) {
@@ -48,7 +50,9 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	}
 
 	// Set the features, etc for this instance
-	tillup.Init(i.GetFeatures(), ProxyURLs, DBPath)
+	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors); err != nil {
+		log.Fatal(err)
+	}
 
 	return true, i
 }

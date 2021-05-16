@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/DataHenHQ/tillup/features"
+	"github.com/DataHenHQ/tillup/interceptors"
 	"github.com/DataHenHQ/tillup/sessions"
 	"github.com/DataHenHQ/tillup/sessions/sticky"
 )
@@ -61,6 +62,20 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 	p, err := NewPageFromRequest(treq, scheme, pconf)
 	if err != nil {
 		return err
+	}
+
+	// If Interceptor is allowed and it matches
+	// If Interceptor is allowed and it matches
+	if features.Allow(features.Interceptors) {
+		if ok, in := interceptors.Matches(treq); ok && in != nil {
+			resp, err := in.CreateResponse()
+			if err != nil {
+				return err
+			}
+
+			writeToSource(sconn, resp, p)
+			return nil
+		}
 	}
 
 	// If StickySession is allowed, then set the sticky session

@@ -8,6 +8,7 @@ import (
 
 	"github.com/DataHenHQ/till/proxy"
 	"github.com/DataHenHQ/till/server"
+	"github.com/DataHenHQ/tillup/interceptors"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -88,6 +89,18 @@ var serveCmd = &cobra.Command{
 		}
 		server.DBPath = dbpath
 
+		// sets the interceptors
+		var rs []interceptors.Interceptor
+		viper.UnmarshalKey("interceptors", &rs)
+		if rs != nil {
+			// validates the interceptors
+			if ok, errs := interceptors.ValidateAll(rs); !ok || len(errs) > 0 {
+				log.Fatal("Your config file has invalid interceptors:", errs)
+			}
+
+			server.Interceptors = rs
+		}
+
 		// start the server
 		server.Serve(port)
 	},
@@ -140,6 +153,7 @@ func init() {
 	if err := viper.BindPFlag("dbpath", serveCmd.Flags().Lookup("dbpath")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
+
 }
 
 func setCaFileDefaults(caCertFile *string, caKeyFile *string) {
