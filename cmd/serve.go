@@ -58,7 +58,7 @@ var serveCmd = &cobra.Command{
 		// set the proxy-file
 		proxyFile := viper.GetString("proxy-file")
 		if proxyFile != "" {
-			count, err := proxy.LoadProxyFile(proxyFile)
+			count, urls, err := proxy.LoadProxyFile(proxyFile)
 			if err != nil {
 				fmt.Println("Problem loading the proxy-file:", err)
 				fmt.Println("aborting server")
@@ -69,10 +69,24 @@ var serveCmd = &cobra.Command{
 				fmt.Println("aborting server")
 				return
 			}
+
+			// set the proxy urls and counts
+			server.ProxyURLs = urls
+			proxy.ProxyURLs = urls
+			server.ProxyCount = count
+			proxy.ProxyCount = count
+
 			fmt.Printf("Using proxy-file to randomize through %d proxies: %v\n", count, proxyFile)
 		} else {
 			fmt.Println("Warning! No proxy-file supplied. You will be exposing your own IP address if you don't use Till with a proxy", proxyFile)
 		}
+
+		// sets the DB path
+		dbpath := viper.GetString("dbpath")
+		if dbpath == "" {
+			dbpath = filepath.Join(tillHomeDir, fmt.Sprintf("%v.db", instance))
+		}
+		server.DBPath = dbpath
 
 		// start the server
 		server.Serve(port)
@@ -119,6 +133,11 @@ func init() {
 
 	serveCmd.Flags().String("proxy-file", "", "Specify the path to a txt file that contains a list of proxies")
 	if err := viper.BindPFlag("proxy-file", serveCmd.Flags().Lookup("proxy-file")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().String("dbpath", "", "Specify the path to the DB that Till uses")
+	if err := viper.BindPFlag("dbpath", serveCmd.Flags().Lookup("dbpath")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 }

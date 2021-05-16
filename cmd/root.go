@@ -51,7 +51,6 @@ func Execute() {
 }
 
 func init() {
-	initTillVersion()
 	initTillHomeDir()
 	cobra.OnInitialize(initConfig)
 
@@ -63,10 +62,6 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func initTillVersion() {
-
 }
 
 func initTillHomeDir() {

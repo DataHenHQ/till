@@ -4,6 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/DataHenHQ/tillup/features"
+	"github.com/DataHenHQ/tillup/sessions"
+	"github.com/DataHenHQ/tillup/sessions/sticky"
 )
 
 // HandleHTTP proxies the request from source to target
@@ -17,16 +21,30 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 	defer sconn.Close()
 
+	// Create a till session
+	sess := sessions.New()
+
 	// Generate the Page
-	pconf := generatePageConfig()
+	pconf := generatePageConfig(sreq)
 	scheme := sreq.URL.Scheme
 	p, err := NewPageFromRequest(sreq, scheme, pconf)
 	if err != nil {
 		return err
 	}
 
+	// If StickySession is allowed, then set the sticky session
+	if features.Allow(features.StickySessions) {
+		s, err := sticky.GetSessionFromRequest(sreq, (sessions.PageConfig)(*pconf))
+		if err != nil {
+			return err
+		}
+		if s != nil {
+			sess = s
+		}
+	}
+
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, sreq, scheme, p, pconf)
+	tresp, err := sendToTarget(sconn, sreq, scheme, p, pconf, sess)
 	if err != nil {
 		return err
 	}

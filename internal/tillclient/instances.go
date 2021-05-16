@@ -6,18 +6,21 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/DataHenHQ/tillup/features"
 	"github.com/go-resty/resty/v2"
 )
 
 type InstancesService service
 
 type Instance struct {
-	ID          *int64     `json:"id,omitempty"`
-	Name        *string    `json:"name,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	Requests    *int64     `json:"requests,omitempty"`
-	CreatedAt   *Timestamp `json:"created_at,omitempty"`
-	UpdatedAt   *Timestamp `json:"updated_at,omitempty"`
+	ID          *int64              `json:"id,omitempty"`
+	Name        *string             `json:"name,omitempty"`
+	Description *string             `json:"description,omitempty"`
+	Requests    *int64              `json:"requests,omitempty"`
+	Features    *[]features.Feature `json:"features,omitempty"`
+
+	CreatedAt *Timestamp `json:"created_at,omitempty"`
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
 }
 
 func (s *InstancesService) Get(ctx context.Context, name string) (*Instance, *resty.Response, error) {
@@ -63,6 +66,14 @@ func (i *Instance) GetDescription() string {
 		return ""
 	}
 	return *i.Description
+}
+
+// GetFeatures returns the Features field if it's non-nil, zero value otherwise.
+func (i *Instance) GetFeatures() []features.Feature {
+	if i == nil || i.Features == nil {
+		return []features.Feature{}
+	}
+	return *i.Features
 }
 
 // GetCreatedAt returns the CreatedAt field if it's non-nil, zero value otherwise.

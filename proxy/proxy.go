@@ -16,6 +16,8 @@ import (
 
 	"github.com/DataHenHQ/datahen/pages"
 	"github.com/DataHenHQ/till/internal/tillclient"
+	"github.com/DataHenHQ/tillup/sessions"
+	"github.com/DataHenHQ/tillup/sessions/sticky"
 	"github.com/DataHenHQ/useragent"
 	"github.com/google/martian/v3/har"
 	"golang.org/x/net/publicsuffix"
@@ -65,7 +67,7 @@ func init() {
 	harlogger.SetOption(har.BodyLogging(false))
 }
 
-func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *pages.Page, err error) {
+func NewPageFromRequest(r *http.Request, scheme string, pconf *PageConfig) (p *pages.Page, err error) {
 	p = new(pages.Page)
 
 	u := r.URL
@@ -82,7 +84,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	}
 
 	// remove User-Agent header if we force-user agent
-	if config.ForceUA {
+	if pconf.ForceUA {
 		delete(nh, "User-Agent")
 	}
 
@@ -94,7 +96,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 
 	// fetch type will always be "standard" for Till
 	p.FetchType = "standard"
-	p.UaType = config.UaType
+	p.UaType = pconf.UaType
 
 	// read the request body, save it and set it back to the request body
 	rBody, _ := ioutil.ReadAll(r.Body)
@@ -102,7 +104,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	p.SetBody(string(rBody))
 
 	// set defaults
-	p.SetUaType(config.UaType)
+	p.SetUaType(pconf.UaType)
 	p.SetFetchType("standard")
 	p.SetPageType("default")
 
@@ -116,7 +118,7 @@ func NewPageFromRequest(r *http.Request, scheme string, config *PageConfig) (p *
 	return p, nil
 }
 
-func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, config *PageConfig) (tresp *http.Response, err error) {
+func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
 	// create transport for client
 	t := &http.Transport{
 		Dial: (&net.Dialer{
@@ -136,9 +138,15 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	defer t.CloseIdleConnections()
 
 	// set proxy if specified
-	if config.UseProxy {
-		// randomizes the proxy
-		u := getRandom(ProxyURLs)
+	if pconf.UseProxy {
+
+		// using till session's proxy URL, or generate random proxy
+		u := sess.ProxyURL
+		if u == "" {
+			u = getRandom(ProxyURLs)
+		}
+
+		// set the proxy
 		p, err := url.Parse(u)
 		if err != nil {
 			return nil, err
@@ -177,6 +185,13 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	treq.Host = u.Host
 	treq.Close = true // important. need to close the connection to target as soon as reading was done
 
+	// if there are cookies on the session, set it in the cookiejar
+	if len(sess.Cookies) > 0 {
+		if pconf.StickyCookies {
+			tclient.Jar.SetCookies(treq.URL, sess.Cookies)
+		}
+	}
+
 	// copy source headers into target headers
 	th := copySourceHeaders(sreq.Header)
 	if th != nil {
@@ -188,9 +203,18 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 
 	// if ForceUA is true, then override User-Agent header with a random UA
 	if ForceUA {
-		if err := generateRandomUA(th, UAType); err != nil {
-			return nil, err
+
+		// using till session's user agent, or generate random one
+		ua := sess.UA
+		if ua == "" {
+			ua, err = generateRandomUA(UAType)
+			if err != nil {
+				return nil, err
+			}
 		}
+
+		// Set the ua on the target header
+		th.Set("User-Agent", ua)
 	}
 
 	// record request to HAR
@@ -202,6 +226,14 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	tresp, err = tclient.Do(treq)
 	if err != nil {
 		return nil, err
+	}
+
+	// save the cookies from cookiejar to the session
+	if !sess.IsZero() {
+		if pconf.StickyCookies {
+			sess.Cookies = tclient.Jar.Cookies(treq.URL)
+		}
+		sticky.SaveSession(sess)
 	}
 
 	// record response to HAR
@@ -234,24 +266,22 @@ func copySourceHeaders(sh http.Header) (th http.Header) {
 }
 
 // Overrides User-Agent header with a random one
-func generateRandomUA(h http.Header, uaType string) (err error) {
-	var ua string
+func generateRandomUA(uaType string) (ua string, err error) {
 	switch uaType {
 	case "desktop":
 		ua, err = useragent.Desktop()
 		if err != nil {
-			return err
+			return "", err
 		}
 	case "mobile":
 		ua = useragent.Mobile()
 	}
 
 	if ua == "" {
-		return errors.New(fmt.Sprint("generated empty user agent string for", uaType))
+		return "", errors.New(fmt.Sprint("generated empty user agent string for", uaType))
 	}
 
-	h.Set("User-Agent", ua)
-	return nil
+	return ua, nil
 }
 
 func writeToSource(sconn net.Conn, tresp *http.Response, p *pages.Page) (err error) {

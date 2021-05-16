@@ -13,29 +13,6 @@ import (
 	"time"
 )
 
-// LoadProxyFile will load the file, and
-func LoadProxyFile(path string) (count int, err error) {
-	if path == "" {
-		return 0, errors.New("proxy file path cannot be blank")
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-
-	for s.Scan() {
-		ProxyURLs = append(ProxyURLs, s.Text())
-	}
-
-	ProxyCount = len(ProxyURLs)
-
-	return ProxyCount, nil
-}
-
 func createDirIfNotExist(dirpath string) (err error) {
 	if _, err := os.Stat(dirpath); os.IsNotExist(err) {
 		return os.MkdirAll(dirpath, os.ModeDir|0755)
@@ -77,4 +54,27 @@ func writeHarLog() {
 			fmt.Println(string(hj))
 		}
 	}
+}
+
+// LoadProxyFile will load the file
+func LoadProxyFile(path string) (count int, urls []string, err error) {
+	if path == "" {
+		return 0, nil, errors.New("proxy file path cannot be blank")
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+
+	for s.Scan() {
+		urls = append(urls, s.Text())
+	}
+
+	count = len(urls)
+
+	return count, urls, nil
 }
