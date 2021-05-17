@@ -17,6 +17,10 @@ type PageConfig struct {
 	SessionID     string
 	StickyCookies bool
 	StickyUA      bool
+
+	// Interceptors feature
+	IgnoreInterceptors    []string
+	IgnoreAllInterceptors bool
 }
 
 // UATypeHeader is the custom header that the scraper calls till to set the user agent type
@@ -36,6 +40,10 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		// StickySessions feature
 		StickyCookies: true,
 		StickyUA:      true,
+
+		// Interceptors feature
+		IgnoreInterceptors:    []string{},
+		IgnoreAllInterceptors: false,
 	}
 
 	if uatype := req.Header.Get(UATypeHeader); uatype != "" {
