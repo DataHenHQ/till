@@ -183,7 +183,6 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	u.Scheme = scheme
 	treq.URL = u
 	treq.Host = u.Host
-	treq.Close = true // important. need to close the connection to target as soon as reading was done
 
 	// if there are cookies on the session, set it in the cookiejar
 	if len(sess.Cookies) > 0 {
