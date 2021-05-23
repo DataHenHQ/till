@@ -16,6 +16,8 @@ import (
 
 	"github.com/DataHenHQ/datahen/pages"
 	"github.com/DataHenHQ/till/internal/tillclient"
+	"github.com/DataHenHQ/tillup/cache"
+	"github.com/DataHenHQ/tillup/features"
 	"github.com/DataHenHQ/tillup/sessions"
 	"github.com/DataHenHQ/tillup/sessions/sticky"
 	"github.com/DataHenHQ/useragent"
@@ -56,6 +58,9 @@ var (
 	ReleaseVersion = "dev"
 
 	StatMu *tillclient.InstanceStatMutex
+
+	// Cache is the cache specific config
+	Cache cache.Config
 )
 
 func init() {
@@ -119,6 +124,26 @@ func NewPageFromRequest(r *http.Request, scheme string, pconf *PageConfig) (p *p
 }
 
 func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
+
+	if features.Allow(features.Cache) && !Cache.Disabled {
+
+		// check if past response exist in the cache. if so, then return it.
+		cresp, err := cache.GetResponse(p.GID, pconf.CacheFreshness, pconf.CacheServeFailures)
+		if err != nil {
+			return nil, err
+		}
+		// if cachehit ten return the cached response
+		if cresp != nil {
+			// Increment the CacheHits stats
+			incrCacheHitStatDelta()
+
+			fmt.Println("hit", p.GID, sreq.URL.String())
+			return cresp, nil
+		}
+
+		fmt.Println("   ", p.GID, sreq.URL.String())
+	}
+
 	// create transport for client
 	t := &http.Transport{
 		Dial: (&net.Dialer{
@@ -227,12 +252,28 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 		return nil, err
 	}
 
+	if !sessions.IsSuccess(tresp.StatusCode) {
+		incrFailedRequestStatDelta()
+	}
+
 	// save the cookies from cookiejar to the session
 	if !sess.IsZero() {
 		if pconf.StickyCookies {
 			sess.Cookies = tclient.Jar.Cookies(treq.URL)
 		}
 		sticky.SaveSession(sess)
+	}
+
+	if features.Allow(features.Cache) && !Cache.Disabled {
+		// Store the response to cache
+		err := cache.StoreResponse(p.GID, tresp, pconf.CacheTTL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		// Increment the CacheSets stats
+		incrCacheSetStatDelta()
+
 	}
 
 	// record response to HAR
@@ -300,6 +341,46 @@ func incrRequestStatDelta() {
 
 	// increment the requests counter
 	*(StatMu.InstanceStat.Requests) = *(StatMu.InstanceStat.Requests) + uint64(1)
+	StatMu.Mutex.Unlock()
+
+}
+
+// Atomically increments intercepted request delta in the instance stat
+func incrInterceptedRequestStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the requests counter
+	*(StatMu.InstanceStat.InterceptedRequests) = *(StatMu.InstanceStat.InterceptedRequests) + uint64(1)
+	StatMu.Mutex.Unlock()
+
+}
+
+// Atomically increments failed request delta in the instance stat
+func incrFailedRequestStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the requests counter
+	*(StatMu.InstanceStat.FailedRequests) = *(StatMu.InstanceStat.FailedRequests) + uint64(1)
+	StatMu.Mutex.Unlock()
+
+}
+
+// Atomically increments request delta in the instance stat
+func incrCacheHitStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the CacheHits counter
+	*(StatMu.InstanceStat.CacheHits) = *(StatMu.InstanceStat.CacheHits) + uint64(1)
+	StatMu.Mutex.Unlock()
+
+}
+
+// Atomically increments request delta in the instance stat
+func incrCacheSetStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the CacheSets counter
+	*(StatMu.InstanceStat.CacheSets) = *(StatMu.InstanceStat.CacheSets) + uint64(1)
 	StatMu.Mutex.Unlock()
 
 }

@@ -13,11 +13,15 @@ import (
 type InstancesService service
 
 type Instance struct {
-	ID          *int64              `json:"id,omitempty"`
-	Name        *string             `json:"name,omitempty"`
-	Description *string             `json:"description,omitempty"`
-	Requests    *int64              `json:"requests,omitempty"`
-	Features    *[]features.Feature `json:"features,omitempty"`
+	ID                  *int64              `json:"id,omitempty"`
+	Name                *string             `json:"name,omitempty"`
+	Description         *string             `json:"description,omitempty"`
+	Requests            *int64              `json:"requests,omitempty"`
+	InterceptedRequests *int64              `json:"intercepted_requests,omitempty"`
+	FailedRequests      *int64              `json:"failed_requests,omitempty"`
+	CacheHits           *int64              `json:"cache_hits,omitempty"`
+	CacheSets           *int64              `json:"cache_sets,omitempty"`
+	Features            *[]features.Feature `json:"features,omitempty"`
 
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 	UpdatedAt *Timestamp `json:"updated_at,omitempty"`

@@ -65,7 +65,6 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 
 	// If Interceptor is allowed and it matches
-	// If Interceptor is allowed and it matches
 	if features.Allow(features.Interceptors) {
 		if ok, in := interceptors.Matches(treq); ok && in != nil {
 			resp, err := in.CreateResponse()
@@ -74,6 +73,10 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 			}
 
 			writeToSource(sconn, resp, p)
+
+			// Increment reqs and intercepted reqs stats
+			incrRequestStatDelta()
+			incrInterceptedRequestStatDelta()
 			return nil
 		}
 	}

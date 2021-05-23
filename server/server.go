@@ -12,6 +12,7 @@ import (
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/till/proxy"
+	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 
 	"github.com/DataHenHQ/tillup"
@@ -25,6 +26,7 @@ var (
 	ProxyCount   = 0
 	DBPath       string
 	Interceptors []interceptors.Interceptor
+	Cache        cache.Config
 )
 
 func validateInstance() (ok bool, i *tillclient.Instance) {
@@ -50,7 +52,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	}
 
 	// Set the features, etc for this instance
-	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors); err != nil {
+	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, Cache); err != nil {
 		log.Fatal(err)
 	}
 
@@ -65,12 +67,16 @@ func Serve(port string) {
 	}
 
 	// init the InstanceStat
-	rs := uint64(0)
+	// newZeroStat()
 	StatMu = tillclient.InstanceStatMutex{
 		Mutex: &sync.Mutex{},
 		InstanceStat: tillclient.InstanceStat{
-			Requests: &rs,
-			Name:     &Instance,
+			Requests:            newZeroStat(),
+			InterceptedRequests: newZeroStat(),
+			FailedRequests:      newZeroStat(),
+			CacheHits:           newZeroStat(),
+			CacheSets:           newZeroStat(),
+			Name:                &Instance,
 		},
 	}
 	proxy.StatMu = &StatMu
@@ -129,5 +135,14 @@ func resetInstanceStatDelta(is tillclient.InstanceStat) {
 	StatMu.Mutex.Lock()
 	// resets the delta by decreasing it by the uploaded stat
 	*(StatMu.InstanceStat.Requests) = *(StatMu.InstanceStat.Requests) - is.GetRequests()
+	*(StatMu.InstanceStat.InterceptedRequests) = *(StatMu.InstanceStat.InterceptedRequests) - is.GetInterceptedRequests()
+	*(StatMu.InstanceStat.FailedRequests) = *(StatMu.InstanceStat.FailedRequests) - is.GetFailedRequests()
+	*(StatMu.InstanceStat.CacheHits) = *(StatMu.InstanceStat.CacheHits) - is.GetCacheHits()
+	*(StatMu.InstanceStat.CacheSets) = *(StatMu.InstanceStat.CacheSets) - is.GetCacheSets()
 	StatMu.Mutex.Unlock()
+}
+
+func newZeroStat() *uint64 {
+	i := uint64(0)
+	return &i
 }

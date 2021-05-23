@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/DataHenHQ/tillup/cache"
+	"github.com/DataHenHQ/tillup/cache/freshness"
+	"github.com/DataHenHQ/tillup/cache/ttl"
 	"github.com/DataHenHQ/tillup/sessions/sticky"
 )
 
@@ -21,6 +24,11 @@ type PageConfig struct {
 	// Interceptors feature
 	IgnoreInterceptors    []string
 	IgnoreAllInterceptors bool
+
+	// Cache feature
+	CacheFreshness     freshness.Type
+	CacheTTL           ttl.Type
+	CacheServeFailures bool
 }
 
 // UATypeHeader is the custom header that the scraper calls till to set the user agent type
@@ -44,6 +52,11 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		// Interceptors feature
 		IgnoreInterceptors:    []string{},
 		IgnoreAllInterceptors: false,
+
+		// Cache feature
+		CacheFreshness:     Cache.Freshness,
+		CacheTTL:           Cache.TTL,
+		CacheServeFailures: Cache.ServeFailures,
 	}
 
 	if uatype := req.Header.Get(UATypeHeader); uatype != "" {
@@ -68,7 +81,24 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		pconf.StickyCookies, _ = strconv.ParseBool(val)
 		req.Header.Del(sticky.StickyCookiesHeader)
 	}
-	defer req.Header.Del(sticky.StickyCookiesHeader)
+
+	// Get the Cache Freshness header
+	if val := req.Header.Get(cache.FreshnessHeader); val != "" {
+		pconf.CacheFreshness = freshness.ConvToType(val)
+		req.Header.Del(cache.FreshnessHeader)
+	}
+
+	// Get the Cache TTL header
+	if val := req.Header.Get(cache.TTLHeader); val != "" {
+		pconf.CacheTTL = ttl.ConvToType(val)
+		req.Header.Del(cache.TTLHeader)
+	}
+
+	// Get the Cache Serve Failures
+	if val := req.Header.Get(cache.ServeFailures); val != "" {
+		pconf.CacheServeFailures, _ = strconv.ParseBool(val)
+		req.Header.Del(cache.ServeFailures)
+	}
 
 	return pconf
 }

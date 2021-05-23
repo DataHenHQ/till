@@ -8,6 +8,7 @@ import (
 
 	"github.com/DataHenHQ/till/proxy"
 	"github.com/DataHenHQ/till/server"
+	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -100,6 +101,16 @@ var serveCmd = &cobra.Command{
 
 			server.Interceptors = rs
 		}
+
+		// Sets cache related configurations
+		var cacheconf cache.Config
+		viper.UnmarshalKey("cache", &cacheconf)
+		if _, err := cacheconf.Validate(); err != nil {
+			log.Fatal("Your config file has invalid cache settings:", err)
+		}
+		cacheconf.SetDefaults()
+		server.Cache = cacheconf
+		proxy.Cache = cacheconf
 
 		// start the server
 		server.Serve(port)

@@ -42,6 +42,10 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 			}
 
 			writeToSource(sconn, resp, p)
+
+			// Increment reqs and intercepted reqs stats
+			incrRequestStatDelta()
+			incrInterceptedRequestStatDelta()
 			return nil
 		}
 	}

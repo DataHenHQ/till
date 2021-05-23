@@ -14,8 +14,12 @@ import (
 type InstanceStatsService service
 
 type InstanceStat struct {
-	Name     *string `json:"name,omitempty"`
-	Requests *uint64 `json:"requests,omitempty"`
+	Name                *string `json:"name,omitempty"`
+	Requests            *uint64 `json:"requests,omitempty"`
+	InterceptedRequests *uint64 `json:"intercepted_requests,omitempty"`
+	FailedRequests      *uint64 `json:"failed_requests,omitempty"`
+	CacheHits           *uint64 `json:"cache_hits,omitempty"`
+	CacheSets           *uint64 `json:"cache_sets,omitempty"`
 }
 
 // InstanceStatMutex is used for struct to for atomic incr and decr of counters
@@ -59,6 +63,38 @@ func (is *InstanceStat) GetRequests() uint64 {
 	return *is.Requests
 }
 
+// GetInterceptedRequests returns the InterceptedRequests field if it's non-nil, zero value otherwise.
+func (is *InstanceStat) GetInterceptedRequests() uint64 {
+	if is == nil || is.InterceptedRequests == nil {
+		return 0
+	}
+	return *is.InterceptedRequests
+}
+
+// GetFailedRequests returns the FailedRequests field if it's non-nil, zero value otherwise.
+func (is *InstanceStat) GetFailedRequests() uint64 {
+	if is == nil || is.FailedRequests == nil {
+		return 0
+	}
+	return *is.FailedRequests
+}
+
+// GetCacheHits returns the CacheHits field if it's non-nil, zero value otherwise.
+func (is *InstanceStat) GetCacheHits() uint64 {
+	if is == nil || is.CacheHits == nil {
+		return 0
+	}
+	return *is.CacheHits
+}
+
+// GetCacheSets returns the CacheSets field if it's non-nil, zero value otherwise.
+func (is *InstanceStat) GetCacheSets() uint64 {
+	if is == nil || is.CacheSets == nil {
+		return 0
+	}
+	return *is.CacheSets
+}
+
 // GetName returns the Name field if it's non-nil, zero value otherwise.
 func (is *InstanceStat) GetName() string {
 	if is == nil || is.Name == nil {
@@ -69,13 +105,17 @@ func (is *InstanceStat) GetName() string {
 
 // IsZero checks if it is zero value
 func (is *InstanceStat) IsZero() bool {
-	if is.GetRequests() == 0 {
+	if is.GetRequests() == 0 &&
+		is.GetInterceptedRequests() == 0 &&
+		is.GetFailedRequests() == 0 &&
+		is.GetCacheHits() == 0 &&
+		is.GetCacheSets() == 0 {
 		return true
 	}
 	return false
 }
 
-// DeepCopy goes through the fields and copy them, so that all values are copied, an all pointer don't point to the same address
+// DeepCopy goes through the fields and copy them, so that all values are copied, and all pointer don't point to the same address
 func (is *InstanceStat) DeepCopy() (nis InstanceStat) {
 	if is.Name != nil {
 		name := is.GetName()
@@ -83,8 +123,28 @@ func (is *InstanceStat) DeepCopy() (nis InstanceStat) {
 	}
 
 	if is.Requests != nil {
-		requests := is.GetRequests()
-		nis.Requests = &requests
+		val := is.GetRequests()
+		nis.Requests = &val
+	}
+
+	if is.InterceptedRequests != nil {
+		val := is.GetInterceptedRequests()
+		nis.InterceptedRequests = &val
+	}
+
+	if is.FailedRequests != nil {
+		val := is.GetFailedRequests()
+		nis.FailedRequests = &val
+	}
+
+	if is.CacheHits != nil {
+		val := is.GetCacheHits()
+		nis.CacheHits = &val
+	}
+
+	if is.CacheSets != nil {
+		val := is.GetCacheSets()
+		nis.CacheSets = &val
 	}
 
 	return nis
