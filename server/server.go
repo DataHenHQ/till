@@ -15,6 +15,8 @@ import (
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 
+	_ "net/http/pprof"
+
 	"github.com/DataHenHQ/tillup"
 )
 
@@ -61,6 +63,11 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 
 // Serve runs the Till server to start accepting the proxy requests
 func Serve(port string) {
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	ok, i := validateInstance()
 	if !ok {
 		return
