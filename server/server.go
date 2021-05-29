@@ -2,12 +2,11 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
-	"sync"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
@@ -60,85 +59,63 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 }
 
 // Serve runs the Till server to start accepting the proxy requests
-func Serve(port string) {
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 10 seconds.
+	//
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+
+	// Validates this instance with the cloud
 	ok, i := validateInstance()
 	if !ok {
 		return
 	}
 
-	// init the InstanceStat
-	// newZeroStat()
-	StatMu = tillclient.InstanceStatMutex{
-		Mutex: &sync.Mutex{},
-		InstanceStat: tillclient.InstanceStat{
-			Requests:            newZeroStat(),
-			InterceptedRequests: newZeroStat(),
-			FailedRequests:      newZeroStat(),
-			CacheHits:           newZeroStat(),
-			CacheSets:           newZeroStat(),
-			Name:                &Instance,
-		},
-	}
+	// Start recurning stats update to cloud
+	//
+	StatMu = newInstanceStatMutex()
 	proxy.StatMu = &StatMu
+	go startRecurringStatUpdate()
 
-	// start the loop to update InstanceStat on the cloud
-	go func() {
-		client, err := tillclient.NewClient(Token)
-		if err != nil {
-			log.Fatal(err)
-		}
+	// Starts the Proxy server
+	//
+	prox, err := NewProxyServer(port, i)
+	if err != nil {
+		log.Fatal("Unable to start Till Proxy Server")
+	}
+	go prox.ListenAndServe()
 
-		for {
-			time.Sleep(time.Minute)
 
-			// Take a snapshot of the state of the instate stat by doing deep copy
-			is := StatMu.InstanceStat.DeepCopy()
+	// waits for quit signal from OS
+	<-quit
 
-			// if instance stat is zero then skip this step
-			if is.IsZero() {
-				continue
-			}
+	// create context for graceful shutdown with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-			// Update the stat on the cloud
-			_, _, err := client.InstanceStats.Update(context.Background(), is)
-			if err != nil {
-				fmt.Printf("gotten error: %v\n", err)
-			}
 
-			resetInstanceStatDelta(is)
-
-		}
-	}()
-
-	// Start the server
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%v", port),
-		ReadTimeout:  1 * time.Minute,
-		WriteTimeout: 1 * time.Minute,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodConnect {
-				proxy.HandleTunneling(w, r)
-			} else {
-				proxy.HandleHTTP(w, r)
-			}
-		}),
-		// Disable HTTP/2.
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
+	// Shuts down proxy server
+	if err := prox.server.Shutdown(ctx); err != nil {
+		log.Println("unable to shut down DataHen TIll server:", err)
 	}
 
-	fmt.Printf("Starting DataHen Till server. Instance: %v, port: %v\n", i.GetName(), port)
-	log.Fatal(server.ListenAndServe())
 }
 
 // Resets the instant stats delta based on what was uploaded
 func resetInstanceStatDelta(is tillclient.InstanceStat) {
+	// Lock the mutex first, to prevent edits by other concurent processes
 	StatMu.Mutex.Lock()
+
 	// resets the delta by decreasing it by the uploaded stat
+	//
 	*(StatMu.InstanceStat.Requests) = *(StatMu.InstanceStat.Requests) - is.GetRequests()
 	*(StatMu.InstanceStat.InterceptedRequests) = *(StatMu.InstanceStat.InterceptedRequests) - is.GetInterceptedRequests()
 	*(StatMu.InstanceStat.FailedRequests) = *(StatMu.InstanceStat.FailedRequests) - is.GetFailedRequests()
 	*(StatMu.InstanceStat.CacheHits) = *(StatMu.InstanceStat.CacheHits) - is.GetCacheHits()
 	*(StatMu.InstanceStat.CacheSets) = *(StatMu.InstanceStat.CacheSets) - is.GetCacheSets()
+
+	// Unlock the mutex
 	StatMu.Mutex.Unlock()
 }
 
