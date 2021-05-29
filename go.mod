@@ -9,8 +9,10 @@ require (
 	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/google/martian/v3 v3.1.0
+	github.com/gorilla/mux v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
+	github.com/unrolled/render v1.4.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 )

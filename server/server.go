@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"log"
@@ -26,6 +27,13 @@ var (
 	DBPath       string
 	Interceptors []interceptors.Interceptor
 	Cache        cache.Config
+
+	// current instance from the server
+	curri tillclient.Instance
+
+	// content holds our static web server content.
+	//go:embed templates/*
+	embeddedTemplates embed.FS
 )
 
 func validateInstance() (ok bool, i *tillclient.Instance) {
@@ -50,6 +58,9 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 		log.Fatal(err)
 	}
 
+	// set the current instance global var
+	curri = *i
+
 	// Set the features, etc for this instance
 	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, Cache); err != nil {
 		log.Fatal(err)
@@ -59,6 +70,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 }
 
 // Serve runs the Till server to start accepting the proxy requests
+func Serve(port string, apiport string) {
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
@@ -86,6 +98,13 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	}
 	go prox.ListenAndServe()
 
+	// Starts the API server
+	//
+	api, err := NewAPIServer(apiport, i)
+	if err != nil {
+		log.Fatal("Unable to start Till API Server")
+	}
+	go api.ListenAndServe()
 
 	// waits for quit signal from OS
 	<-quit
@@ -94,6 +113,10 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Shutdon api server
+	if err := api.server.Shutdown(ctx); err != nil {
+		log.Println("unable to shut down DataHen TIll API server:", err)
+	}
 
 	// Shuts down proxy server
 	if err := prox.server.Shutdown(ctx); err != nil {

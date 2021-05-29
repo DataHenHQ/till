@@ -96,6 +96,38 @@ func (i *Instance) GetRequests() int64 {
 	return *i.Requests
 }
 
+// GetInterceptedRequests returns the InterceptedRequests field if it's non-nil, zero value otherwise.
+func (i *Instance) GetInterceptedRequests() int64 {
+	if i == nil || i.InterceptedRequests == nil {
+		return 0
+	}
+	return *i.InterceptedRequests
+}
+
+// GetFailedRequests returns the FailedRequests field if it's non-nil, zero value otherwise.
+func (i *Instance) GetFailedRequests() int64 {
+	if i == nil || i.FailedRequests == nil {
+		return 0
+	}
+	return *i.FailedRequests
+}
+
+// GetCacheHits returns the CacheHits field if it's non-nil, zero value otherwise.
+func (i *Instance) GetCacheHits() int64 {
+	if i == nil || i.CacheHits == nil {
+		return 0
+	}
+	return *i.CacheHits
+}
+
+// GetCacheSets returns the CacheSets field if it's non-nil, zero value otherwise.
+func (i *Instance) GetCacheSets() int64 {
+	if i == nil || i.CacheSets == nil {
+		return 0
+	}
+	return *i.CacheSets
+}
+
 // GetUpdatedAt returns the UpdatedAt field if it's non-nil, zero value otherwise.
 func (i *Instance) GetUpdatedAt() Timestamp {
 	if i == nil || i.UpdatedAt == nil {

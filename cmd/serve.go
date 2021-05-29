@@ -23,6 +23,7 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		port := viper.GetString("port")
+		apiport := viper.GetString("apiport")
 		proxy.ReleaseVersion = ReleaseVersion
 		// Load or generate a new CA cert files
 		caCertFile := viper.GetString("ca-cert")
@@ -113,7 +114,7 @@ var serveCmd = &cobra.Command{
 		proxy.Cache = cacheconf
 
 		// start the server
-		server.Serve(port)
+		server.Serve(port, apiport)
 	},
 }
 
@@ -132,6 +133,11 @@ func init() {
 
 	serveCmd.Flags().StringP("port", "p", "2933", "Specify the port to run")
 	if err := viper.BindPFlag("port", serveCmd.Flags().Lookup("port")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().String("apiport", "2980", "Specify the port to run the API server")
+	if err := viper.BindPFlag("apiport", serveCmd.Flags().Lookup("apiport")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 

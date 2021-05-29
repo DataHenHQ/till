@@ -41,10 +41,13 @@ func startRecurringStatUpdate() {
 		}
 
 		// Update the stat on the cloud
-		_, _, err := client.InstanceStats.Update(context.Background(), is)
+		i, _, err := client.InstanceStats.Update(context.Background(), is)
 		if err != nil {
 			fmt.Printf("gotten error: %v\n", err)
 		}
+
+		// set the current instance global var
+		curri = *i
 
 		resetInstanceStatDelta(is)
 
