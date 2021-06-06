@@ -45,6 +45,8 @@ github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b h1:IRsyTwmpJhiql
 github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b/go.mod h1:/9dbu45iCO7JnjZDR+Z5eK6OpU6D7fF7bS198VWG7mU=
 github.com/DataHenHQ/tillup v0.0.0-20210525211203-33c9bfb3a79e h1:M3lu3UtOEZB/o+6lzI2ixIiG219rDpfZxY+dPxTB84c=
 github.com/DataHenHQ/tillup v0.0.0-20210525211203-33c9bfb3a79e/go.mod h1:0Jp2lvdgZwtMba/t53ISSzvcOn+RziYZaNdCsrElfKk=
+github.com/DataHenHQ/tillup v0.0.0-20210606094804-994d5e1bfcc8 h1:k0odpAhpqZhFcGoSpvcfR8ruI21TCkpsYcaBZj0XETg=
+github.com/DataHenHQ/tillup v0.0.0-20210606094804-994d5e1bfcc8/go.mod h1:0Jp2lvdgZwtMba/t53ISSzvcOn+RziYZaNdCsrElfKk=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c h1:BvenCGZnVg2fVd9VrlD3ijHCR4dIdYbIr4v3zAudweU=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c/go.mod h1:rpV6pSits3VF8DkRnEkxmaVoTabhph2o/hTTX2aAwoE=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
