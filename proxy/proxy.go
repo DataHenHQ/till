@@ -61,6 +61,13 @@ var (
 
 	// Cache is the cache specific config
 	Cache cache.Config
+
+	// HAR is a flag that enables HAR logging.
+	// if enabled, logs to stdout by default
+	HAR bool
+
+	// HAROutput sets the path of where the har logs will be save as. HAR needs to be set to true, for this to work.
+	HAROutput string
 )
 
 func init() {
@@ -123,6 +130,14 @@ func NewPageFromRequest(r *http.Request, scheme string, pconf *PageConfig) (p *p
 	return p, nil
 }
 
+func logReqSummary(gid, method, url string, respStatus int, cachehit bool) {
+	cacheType := "MISS"
+	if cachehit {
+		cacheType = "HIT "
+	}
+	fmt.Println(cacheType, gid, method, url, respStatus)
+}
+
 func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
 
 	if features.Allow(features.Cache) && !Cache.Disabled {
@@ -137,113 +152,40 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 			// Increment the CacheHits stats
 			incrCacheHitStatDelta()
 
-			fmt.Println("hit", p.GID, sreq.URL.String())
+			logReqSummary(p.GID, sreq.Method, sreq.URL.String(), cresp.StatusCode, true)
+
+			// Build the target req and resp specifically for logging to har.
+			_, treq, terr := buildTargetRequest(scheme, sreq, pconf, sess, p)
+			// defer treq.Body.Close()
+			if terr == nil && treq != nil {
+				// record response to HAR
+				if HAR {
+					if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
+						return nil, err
+					}
+					if err := harlogger.RecordResponse(p.GetGID(), cresp); err != nil {
+						return nil, err
+					}
+				}
+				// return nil, err
+			}
+
 			return cresp, nil
 		}
 
-		fmt.Println("   ", p.GID, sreq.URL.String())
 	}
 
-	// create transport for client
-	t := &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		DisableCompression:    false,
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-		TLSHandshakeTimeout:   10 * time.Second,
-		ResponseHeaderTimeout: 60 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		MaxIdleConns:          1,
-		MaxIdleConnsPerHost:   1,
-		IdleConnTimeout:       1 * time.Millisecond,
-		MaxConnsPerHost:       1,
-	}
-	defer t.CloseIdleConnections()
-
-	// set proxy if specified
-	if pconf.UseProxy {
-
-		// using till session's proxy URL, or generate random proxy
-		u := sess.ProxyURL
-		if u == "" {
-			u = getRandom(ProxyURLs)
-		}
-
-		// set the proxy
-		p, err := url.Parse(u)
-		if err != nil {
-			return nil, err
-		}
-		t.Proxy = http.ProxyURL(p)
-	}
-
-	// create cookiejar
-	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	// build the target request from the source request
+	tclient, treq, err := buildTargetRequest(scheme, sreq, pconf, sess, p)
 	if err != nil {
 		return nil, err
-	}
-
-	// create target client
-	tclient := &http.Client{
-		Timeout:   120 * time.Second,
-		Transport: t,
-		Jar:       jar,
-	}
-
-	// copy the body as *bytes.Reader to properly set the treq's body and content-length
-	srBody, _ := ioutil.ReadAll(sreq.Body)
-	sreq.Body = ioutil.NopCloser(bytes.NewReader(srBody))
-	p.SetBody(string(srBody))
-
-	// create target request
-	treq, err := http.NewRequestWithContext(sreq.Context(), sreq.Method, sreq.RequestURI, bytes.NewReader(srBody))
-	if err != nil {
-		return nil, err
-	}
-	// build the target request
-	u := sreq.URL
-	u.Host = sreq.Host
-	u.Scheme = scheme
-	treq.URL = u
-	treq.Host = u.Host
-
-	// if there are cookies on the session, set it in the cookiejar
-	if len(sess.Cookies) > 0 {
-		if pconf.StickyCookies {
-			tclient.Jar.SetCookies(treq.URL, sess.Cookies)
-		}
-	}
-
-	// copy source headers into target headers
-	th := copySourceHeaders(sreq.Header)
-	if th != nil {
-		treq.Header = th
-	}
-
-	// Delete headers related to proxy usage
-	treq.Header.Del("Proxy-Connection")
-
-	// if ForceUA is true, then override User-Agent header with a random UA
-	if ForceUA {
-
-		// using till session's user agent, or generate random one
-		ua := sess.UA
-		if ua == "" {
-			ua, err = generateRandomUA(UAType)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Set the ua on the target header
-		th.Set("User-Agent", ua)
 	}
 
 	// record request to HAR
-	if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
-		return nil, err
+	if HAR {
+		if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
+			return nil, err
+		}
 	}
 
 	// send the actual request to target server
@@ -276,12 +218,120 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 
 	}
 
+	// log the request summary
+	logReqSummary(p.GID, sreq.Method, sreq.URL.String(), tresp.StatusCode, false)
+
 	// record response to HAR
-	if err := harlogger.RecordResponse(p.GetGID(), tresp); err != nil {
-		return nil, err
+	if HAR {
+		if err := harlogger.RecordResponse(p.GetGID(), tresp); err != nil {
+			return nil, err
+		}
 	}
 
 	return tresp, err
+}
+
+// buildTargetRequest builds a target request from source request, and etc.
+func buildTargetRequest(scheme string, sreq *http.Request, pconf *PageConfig, sess *sessions.Session, p *pages.Page) (*http.Client, *http.Request, error) {
+	// create transport for client
+	t := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		DisableCompression:    false,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 60 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		MaxIdleConns:          1,
+		MaxIdleConnsPerHost:   1,
+		IdleConnTimeout:       1 * time.Millisecond,
+		MaxConnsPerHost:       1,
+	}
+	defer t.CloseIdleConnections()
+
+	// set proxy if specified
+	if pconf.UseProxy {
+
+		// using till session's proxy URL, or generate random proxy
+		u := sess.ProxyURL
+		if u == "" {
+			u = getRandom(ProxyURLs)
+		}
+
+		// set the proxy
+		p, err := url.Parse(u)
+		if err != nil {
+			return nil, nil, err
+		}
+		t.Proxy = http.ProxyURL(p)
+	}
+
+	// create cookiejar
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// create target client
+	tclient := &http.Client{
+		Timeout:   120 * time.Second,
+		Transport: t,
+		Jar:       jar,
+	}
+
+	// copy the body as *bytes.Reader to properly set the treq's body and content-length
+	srBody, _ := ioutil.ReadAll(sreq.Body)
+	sreq.Body = ioutil.NopCloser(bytes.NewReader(srBody))
+	p.SetBody(string(srBody))
+
+	// create target request
+	treq, err := http.NewRequestWithContext(sreq.Context(), sreq.Method, sreq.RequestURI, bytes.NewReader(srBody))
+	if err != nil {
+		return nil, nil, err
+	}
+	// build the target request
+	u := sreq.URL
+	u.Host = sreq.Host
+	u.Scheme = scheme
+	treq.URL = u
+	treq.Host = u.Host
+
+	// if there are cookies on the session, set it in the cookiejar
+	if len(sess.Cookies) > 0 {
+		if pconf.StickyCookies {
+			tclient.Jar.SetCookies(treq.URL, sess.Cookies)
+		}
+	}
+
+	// copy source headers into target headers
+	th := copySourceHeaders(sreq.Header)
+	if th != nil {
+		treq.Header = th
+	}
+
+	// Delete headers related to proxy usage
+	treq.Header.Del("Proxy-Connection")
+
+	// if ForceUA is true, then override User-Agent header with a random UA
+	if ForceUA {
+
+		// using till session's user agent, or generate random one
+		ua := sess.UA
+		if ua == "" {
+			ua, err = generateRandomUA(UAType)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+
+		// Set the ua on the target header
+		th.Set("User-Agent", ua)
+	}
+
+	return tclient, treq, nil
+
 }
 
 // copy source headers other than those that starts with X-DH* into target headers

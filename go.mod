@@ -15,4 +15,5 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/unrolled/render v1.4.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
+	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
 )

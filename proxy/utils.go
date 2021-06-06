@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -48,10 +49,20 @@ func dnsName(addr string) string {
 }
 
 func writeHarLog() {
-	if len(harlogger.Export().Log.Entries) > 0 {
+	if HAR && len(harlogger.Export().Log.Entries) > 0 {
 		h := harlogger.ExportAndReset()
 		if hj, err := json.Marshal(h); err == nil {
-			fmt.Println(string(hj))
+			if HAROutput != "" {
+				f, err := os.OpenFile(HAROutput, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				if err != nil {
+					log.Fatalf("error opening har log file: %v", err)
+				}
+				defer f.Close()
+				fmt.Fprintln(f, string(hj))
+			} else {
+				fmt.Println(string(hj))
+			}
+
 		}
 	}
 }

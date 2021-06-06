@@ -113,6 +113,10 @@ var serveCmd = &cobra.Command{
 		server.Cache = cacheconf
 		proxy.Cache = cacheconf
 
+		// Set Har settings
+		proxy.HAR = viper.GetBool("har")
+		proxy.HAROutput = viper.GetString("har-output")
+
 		// start the server
 		server.Serve(port, apiport)
 	},
@@ -168,6 +172,16 @@ func init() {
 
 	serveCmd.Flags().String("dbpath", "", "Specify the path to the DB that Till uses")
 	if err := viper.BindPFlag("dbpath", serveCmd.Flags().Lookup("dbpath")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().Bool("har", false, "When set to true, will log requests in HAR format")
+	if err := viper.BindPFlag("har", serveCmd.Flags().Lookup("har")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().String("har-output", "", "Specify the path to the HAR output log that Till will save to")
+	if err := viper.BindPFlag("har-output", serveCmd.Flags().Lookup("har-output")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
