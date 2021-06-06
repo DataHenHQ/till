@@ -29,8 +29,8 @@ var (
 	// Token is the Till auth token
 	Token string
 
-	// Instance is the name of this till instance
-	Instance string
+	// InstanceName is the name of this till instance
+	InstanceName string
 
 	ca       tls.Certificate
 	okHeader = []byte("HTTP/1.1 200 OK\r\n\r\n")

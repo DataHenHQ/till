@@ -19,7 +19,7 @@ func newInstanceStatMutex() tillclient.InstanceStatMutex {
 			FailedRequests:      newZeroStat(),
 			CacheHits:           newZeroStat(),
 			CacheSets:           newZeroStat(),
-			Name:                &Instance,
+			Name:                &InstanceName,
 		},
 	}
 }

@@ -7,19 +7,8 @@ import (
 	"time"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
+	"github.com/DataHenHQ/till/server/handlers"
 	"github.com/gorilla/mux"
-	"github.com/unrolled/render"
-)
-
-var (
-
-	// rend is html/json/xml renderer
-	rend = render.New(render.Options{
-		Extensions: []string{".tmpl", ".html"},
-		FileSystem: &render.EmbedFileSystem{
-			FS: embeddedTemplates,
-		},
-	})
 )
 
 type APIServer struct {
@@ -32,7 +21,8 @@ func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error)
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", indexHandler)
+	r.HandleFunc("/", handlers.IndexHandler)
+	// r.HandleFunc("/requests", requestIndexHandler)
 
 	s = &APIServer{
 		server: &http.Server{
@@ -53,15 +43,4 @@ func (s *APIServer) ListenAndServe() {
 	if err := s.server.ListenAndServe(); err != nil {
 		log.Println("shutting down DataHen TIll API server:", err)
 	}
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	rend.HTML(w, http.StatusOK, "index", map[string]interface{}{
-		"Instance":            Instance,
-		"Requests":            curri.GetRequests() + int64(*StatMu.Requests),
-		"InterceptedRequests": curri.GetInterceptedRequests() + int64(*StatMu.InterceptedRequests),
-		"FailedRequests":      curri.GetFailedRequests() + int64(*StatMu.FailedRequests),
-		"CacheHits":           curri.GetCacheHits() + int64(*StatMu.CacheHits),
-		"CacheSets":           curri.GetCacheSets() + int64(*StatMu.CacheSets),
-	})
 }

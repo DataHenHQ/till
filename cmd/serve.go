@@ -55,8 +55,8 @@ var serveCmd = &cobra.Command{
 			fmt.Println("aborting server")
 			return
 		}
-		server.Instance = instance
-		proxy.Instance = instance
+		server.InstanceName = instance
+		proxy.InstanceName = instance
 
 		// set the proxy-file
 		proxyFile := viper.GetString("proxy-file")

@@ -12,6 +12,7 @@ import (
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/till/proxy"
+	"github.com/DataHenHQ/till/server/handlers"
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 
@@ -20,7 +21,7 @@ import (
 
 var (
 	Token        string
-	Instance     string
+	InstanceName string
 	StatMu       tillclient.InstanceStatMutex
 	ProxyURLs    = []string{}
 	ProxyCount   = 0
@@ -48,10 +49,10 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 		log.Fatal(err)
 	}
 
-	i, _, err = client.Instances.Get(context.Background(), Instance)
+	i, _, err = client.Instances.Get(context.Background(), InstanceName)
 	if err != nil {
 		if errors.Is(err, tillclient.ErrNotFound) {
-			log.Fatalf("Instance with the name '%v' is not found. Please create the instance at https://till.datahen.com/instances\n", Instance)
+			log.Fatalf("Instance with the name '%v' is not found. Please create the instance at https://till.datahen.com/instances\n", InstanceName)
 		} else {
 			log.Fatal(err)
 		}
@@ -71,6 +72,12 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 
 // Serve runs the Till server to start accepting the proxy requests
 func Serve(port string, apiport string) {
+
+	// Pass necessary vars to the handlers
+	handlers.SetEmbeddedTemplates(&embeddedTemplates)
+	handlers.InstanceName = InstanceName
+	handlers.CurrentInstance = &curri
+	handlers.StatMu = &StatMu
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
