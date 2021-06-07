@@ -1,0 +1,46 @@
+<h1>DataHen Till</h1>
+<p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
+
+<h2>Request Log</h2>
+{{if .Pagination.EndBefore}}
+<p><a href="?end_before={{.Pagination.EndBefore}}">Prev Page</a></p>
+{{end}}
+
+<table>
+  <tr style="text-align: left;">
+    <th>CACHE</th>
+    <th>Method</th>
+    <th colspan="2">URL</th>
+    <th>Status</th>
+    <th>ContentLength</th>
+    <th>Timestamp</th>
+  </tr>
+
+  
+  {{range $i, $item := .Items}}
+    <tr>
+      <td>
+        {{if $item.CacheHit}}HIT{{else}}MISS{{end}}
+      </td>
+      <td>{{$item.Request.Method}}</td>
+      <td><a href="/requests/{{.RID}}" title="View Request Info" style="text-decoration: none;">	&#9432;</a></td>
+      <td>
+        {{if $item.Response.Status }}
+          <a href="/requests/{{$item.RID}}/content/{{relativepath $item.Request.URL}}" >{{printf "%.120s" $item.Request.URL}}</a>
+        {{else}}
+        {{printf "%.120s" $item.Request.URL}}
+        {{end}}
+      </td>
+      <td title="{{$item.Response.Status}}">{{if (gt $item.Response.StatusCode 0) }}{{$item.Response.StatusCode}}{{end}}</td>
+      <td>{{if (gt $item.Response.ContentLength 0) }}{{$item.Response.ContentLength}}{{end}}</td>
+      <td>{{$item.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
+    </tr>
+  {{end}}
+  
+
+</table>
+
+
+{{if .Pagination.StartAfter}}
+<p><a href="?start_after={{.Pagination.StartAfter}}">Next Page</a></p>
+{{end}}

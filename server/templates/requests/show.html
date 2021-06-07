@@ -1,0 +1,66 @@
+<h1>DataHen Till</h1>
+<p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
+
+<h2>Request</h2>
+
+<table style="text-align: left; vertical-align: top;">
+  <tr><th>Cache</th><td>{{if .CacheHit}}HIT{{else}}MISS{{end}}</td></tr>
+  <tr><th title="Request ID">RID</th><td>{{.RID}}</td></tr>
+  <tr><th title="Global ID of the request">GID</th><td>{{.GID}}</td></tr>
+  <tr><th>Created At</th><td>{{.CreatedAt.Format "2006-01-02 15:04:05"}}</td></tr>
+  <tr><th>Method</th><td>{{.Request.Method}}</td></tr>
+  <tr><th>URL</th><td>{{.Request.URL}}</td></tr>
+  <tr>
+    <th>Header</th>
+    <td>
+      <table style="text-align: left; vertical-align: top;">
+        {{ range $key, $values := .Request.Header }}
+        <tr>
+          <th>{{ $key }}</th>
+          <td>{{ range $value := $values }} {{$value}} {{end}}</td>
+        </tr>
+        {{ end }}
+      </table>
+      
+    </td>
+  </tr>
+  <tr><th>ContentLength</th><td>{{.Request.ContentLength}}</td></tr>
+  <tr><th>Body</th><td>{{printf "%s" .Request.Body}}</td></tr>
+</table>
+
+{{if .Response.Status }}
+<h2>Response</h2> 
+
+
+<table style="text-align: left; vertical-align: top;">
+  <tr><th>Status</th><td>{{.Response.Status}}</td></tr>
+  <tr><th>Proto</th><td>{{.Response.Proto}}</td></tr>
+  <tr>
+    <th>Header</th>
+    <td>
+      <table style="text-align: left; vertical-align: top;">
+        {{ range $key, $values := .Response.Header }}
+        <tr>
+          <th>{{ $key }}</th>
+          <td>{{ range $value := $values }} {{$value}} {{end}}</td>
+        </tr>
+        {{ end }}
+      </table>
+      
+    </td>
+  </tr>
+  <tr><th>ContentLength</th><td>{{if (gt .Response.ContentLength 0)}}{{.Response.ContentLength}}{{end}}</td></tr>
+  <tr>
+    <th>TransferEncoding</th>
+    <td>
+      {{ range $value := .Response.TransferEncoding }} {{$value}} {{end}}
+    </td>
+  </tr>
+  <tr>
+    <th>Body</th>
+    <td>
+      <a href="/requests/{{.RID}}/content/{{relativepath .Request.URL}}" >View Content</a>
+    </td>
+  </tr>
+</table>
+{{end}}

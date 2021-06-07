@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"embed"
+	"html/template"
 	"net/http"
+	"net/url"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/unrolled/render"
@@ -20,12 +22,29 @@ var (
 )
 
 func SetEmbeddedTemplates(e *embed.FS) {
+
+	templateFunc := template.FuncMap{
+		// converts url into relative path
+		"relativepath": func(urlstr string) string {
+			u, err := url.Parse(urlstr)
+			if err != nil {
+				return ""
+			}
+			u.Scheme = ""
+			u.Host = ""
+			u.User = nil
+			return u.String()
+		},
+	}
+
 	Rend = render.New(render.Options{
 		Extensions: []string{".tmpl", ".html"},
 		FileSystem: &render.EmbedFileSystem{
 			FS: *e,
 		},
+		Funcs: []template.FuncMap{templateFunc},
 	})
+
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
