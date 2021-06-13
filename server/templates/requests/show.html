@@ -1,20 +1,25 @@
 <h1>DataHen Till</h1>
 <p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
 
-<h2>Request</h2>
+
 
 <table style="text-align: left; vertical-align: top;">
-  <tr><th>Cache</th><td>{{if .CacheHit}}HIT{{else}}MISS{{end}}</td></tr>
-  <tr><th title="Request ID">RID</th><td>{{.RID}}</td></tr>
-  <tr><th title="Global ID of the request">GID</th><td>{{.GID}}</td></tr>
-  <tr><th>Created At</th><td>{{.CreatedAt.Format "2006-01-02 15:04:05"}}</td></tr>
-  <tr><th>Method</th><td>{{.Request.Method}}</td></tr>
-  <tr><th>URL</th><td>{{.Request.URL}}</td></tr>
+  <tr><th colspan="2"><h2>Info:</h2></th></tr>
+  <tr><th>Cache</th><td>{{if .Item.CacheHit}}HIT{{else}}MISS{{end}}</td></tr>
+  <tr><th title="Request ID">RID</th><td>{{.Item.RID}}</td></tr>
+  <tr><th title="Global ID of the request">GID</th><td>{{.Item.GID}}</td></tr>
+  <tr><th>Created At</th><td>{{.Item.CreatedAt.Format "2006-01-02 15:04:05"}}</td></tr>
+  
+  <tr><th colspan="2">&nbsp;</th></tr>
+
+  <tr><th colspan="2"><h2>Request:</h2></th></tr>
+  <tr><th>Method</th><td>{{.Item.RequestMethod}}</td></tr>
+  <tr><th>URL</th><td>{{.Item.RequestURL}}</td></tr>
   <tr>
     <th>Header</th>
     <td>
       <table style="text-align: left; vertical-align: top;">
-        {{ range $key, $values := .Request.Header }}
+        {{ range $key, $values := .Item.RequestHeader }}
         <tr>
           <th>{{ $key }}</th>
           <td>{{ range $value := $values }} {{$value}} {{end}}</td>
@@ -24,22 +29,20 @@
       
     </td>
   </tr>
-  <tr><th>ContentLength</th><td>{{.Request.ContentLength}}</td></tr>
-  <tr><th>Body</th><td>{{printf "%s" .Request.Body}}</td></tr>
-</table>
-
-{{if .Response.Status }}
-<h2>Response</h2> 
+  <tr><th>ContentLength</th><td>{{.Item.RequestContentLength}}</td></tr>
+  <tr><th>Body</th><td>{{printf "%s" .Item.RequestBody}}</td></tr>
 
 
-<table style="text-align: left; vertical-align: top;">
-  <tr><th>Status</th><td>{{.Response.Status}}</td></tr>
-  <tr><th>Proto</th><td>{{.Response.Proto}}</td></tr>
+{{if .Item.ResponseStatus }}
+  <tr><th colspan="2">&nbsp;</th></tr>
+  <tr><th colspan="2"><h2>Response:</h2></th></tr>
+  <tr><th>Status</th><td>{{.Item.ResponseStatus}}</td></tr>
+  <tr><th>Proto</th><td>{{.Item.ResponseProto}}</td></tr>
   <tr>
     <th>Header</th>
     <td>
       <table style="text-align: left; vertical-align: top;">
-        {{ range $key, $values := .Response.Header }}
+        {{ range $key, $values := .Item.ResponseHeader }}
         <tr>
           <th>{{ $key }}</th>
           <td>{{ range $value := $values }} {{$value}} {{end}}</td>
@@ -49,18 +52,19 @@
       
     </td>
   </tr>
-  <tr><th>ContentLength</th><td>{{if (gt .Response.ContentLength 0)}}{{.Response.ContentLength}}{{end}}</td></tr>
+  <tr><th>ContentLength</th><td>{{if (gt .Item.ResponseContentLength 0)}}{{.Item.ResponseContentLength}}{{end}}</td></tr>
   <tr>
     <th>TransferEncoding</th>
     <td>
-      {{ range $value := .Response.TransferEncoding }} {{$value}} {{end}}
+      {{ range $value := .Item.ResponseTransferEncoding }} {{$value}} {{end}}
     </td>
   </tr>
   <tr>
     <th>Body</th>
     <td>
-      <a href="/requests/{{.RID}}/content/{{relativepath .Request.URL}}" >View Content</a>
+      <a href="/requests/{{.Item.RID}}/content/{{relativepath .Item.RequestURL}}" >View Content</a>
     </td>
   </tr>
-</table>
+
 {{end}}
+</table>

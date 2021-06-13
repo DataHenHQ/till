@@ -2,17 +2,86 @@
 <p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
 
 <h2>Request Log</h2>
-{{if .Pagination.EndBefore}}
-<p><a href="?end_before={{.Pagination.EndBefore}}">Prev Page</a></p>
+
+{{if not .Filter.IsZero}}
+<table style="text-align: left;">
+  <tr>
+    <th colspan="3">Filters:</th>
+  </tr>
+  {{if .Filter.GID }}
+    <tr>
+      <th>GID</th>
+      <td>{{.Filter.GID}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "gid" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if .Filter.Cache }}
+    <tr>
+      <th>Cache</th>
+      <td>{{.Filter.Cache}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "cache" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if .Filter.Method }}
+    <tr>
+      <th>Method</th>
+      <td>{{.Filter.Method}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "method" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if .Filter.Code }}
+    <tr>
+      <th>Code</th>
+      <td>{{.Filter.Code}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "code" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if not .Filter.FromTime.IsZero }}
+    <tr>
+      <th>From Time</th>
+      <td>{{.Filter.FromTime}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "from_time" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if not .Filter.ToTime.IsZero }}
+    <tr>
+      <th>To Time</th>
+      <td>{{.Filter.ToTime}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "to_time" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if .Filter.FromResponseContentLength }}
+    <tr>
+      <th>From Content Length</th>
+      <td>{{.Filter.FromResponseContentLength}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "from_content_length" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+  {{if .Filter.ToResponseSize }}
+    <tr>
+      <th>To Content Length</th>
+      <td>{{.Filter.ToResponseSize}}</td>
+      <td><a href='{{appendQueryString .CurrentURL "to_content_length" ""}}' title="remove filter">X</a></td>
+    </tr>
+  {{end}}
+</table>
+<hr/>
 {{end}}
+
+
+{{if .Pagination.StartAfter}}
+<p><a href='{{appendQueryString .CurrentURL "start_after" .Pagination.StartAfter "end_before" ""}}'>Newer</a></p>
+{{end}}
+
 
 <table>
   <tr style="text-align: left;">
+    <th title="Global ID">GID</th>
     <th>CACHE</th>
     <th>Method</th>
     <th colspan="2">URL</th>
-    <th>Status</th>
-    <th>ContentLength</th>
+    <th title="Response Status Code">Status</th>
+    <th title="Response Content Length">ContentLength</th>
     <th>Timestamp</th>
   </tr>
 
@@ -20,20 +89,44 @@
   {{range $i, $item := .Items}}
     <tr>
       <td>
-        {{if $item.CacheHit}}HIT{{else}}MISS{{end}}
+        <a href='/requests?gid={{ .GID }}' title="{{.GID}}">{{shortGID .GID}}</a>
       </td>
-      <td>{{$item.Request.Method}}</td>
+      <td>
+        {{if $item.CacheHit -}}
+        <a href='{{appendQueryString $.CurrentURL "cache" "HIT" }}'>HIT</a>
+        {{- else -}}
+        <a href='{{appendQueryString $.CurrentURL "cache" "MISS" }}'>MISS</a>
+        {{- end}}
+      </td>
+      <td>
+        <a href='{{appendQueryString $.CurrentURL "method" $item.RequestMethod }}'>{{$item.RequestMethod}}</a>
+      </td>
       <td><a href="/requests/{{.RID}}" title="View Request Info" style="text-decoration: none;">	&#9432;</a></td>
       <td>
-        {{if $item.Response.Status }}
-          <a href="/requests/{{$item.RID}}/content/{{relativepath $item.Request.URL}}" >{{printf "%.120s" $item.Request.URL}}</a>
+        {{if $item.ResponseStatus }}
+          <a href="/requests/{{$item.RID}}/content/{{relativepath $item.RequestURL}}" >{{printf "%.120s" $item.RequestURL}}</a>
         {{else}}
-        {{printf "%.120s" $item.Request.URL}}
+        {{printf "%.120s" $item.RequestURL}}
         {{end}}
       </td>
-      <td title="{{$item.Response.Status}}">{{if (gt $item.Response.StatusCode 0) }}{{$item.Response.StatusCode}}{{end}}</td>
-      <td>{{if (gt $item.Response.ContentLength 0) }}{{$item.Response.ContentLength}}{{end}}</td>
-      <td>{{$item.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
+      <td title="{{$item.ResponseStatus}}">
+        {{if (gt $item.ResponseStatusCode 0) }}
+          <a href='{{appendQueryString $.CurrentURL "code" $item.ResponseStatusCode }}'>{{$item.ResponseStatusCode}}</a>
+          <a href='{{appendQueryString $.CurrentURL "code"  (printf "!%d" $item.ResponseStatusCode) }}' title="exclude {{$item.ResponseStatusCode}} status">!</a>
+        {{end}}
+      </td>
+      <td>
+        {{if (gt $item.ResponseContentLength 0) }}
+          {{$item.ResponseContentLength}}
+          <a href='{{appendQueryString $.CurrentURL "from_content_length" (printf "%d" $item.ResponseContentLength ) }}' title="from content length">F</a>
+          <a href='{{appendQueryString $.CurrentURL "to_content_length" (printf "%d" $item.ResponseContentLength ) }}' title="to content length">T</a>
+        {{end}}
+      </td>
+      <td>
+        {{$item.CreatedAt.Format "2006-01-02 15:04:05"}}
+        <a href='{{appendQueryString $.CurrentURL "from_time" ($item.CreatedAt.Format "2006-01-02T15:04:05Z07:00") }}' title="from time">F</a>
+        <a href='{{appendQueryString $.CurrentURL "to_time" ($item.CreatedAt.Format "2006-01-02T15:04:05Z07:00") }}' title="to time">T</a>
+      </td>
     </tr>
   {{end}}
   
@@ -41,6 +134,6 @@
 </table>
 
 
-{{if .Pagination.StartAfter}}
-<p><a href="?start_after={{.Pagination.StartAfter}}">Next Page</a></p>
+{{if .Pagination.EndBefore}}
+<p><a href='{{appendQueryString .CurrentURL "end_before" .Pagination.EndBefore "start_after" "" }}'>Older</a></p>
 {{end}}
