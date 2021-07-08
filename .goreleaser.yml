@@ -36,7 +36,6 @@ builds:
     goarch:
       - amd64
       - 386
-      - arm64
 
   - id: till_windows_i686
     binary: till
