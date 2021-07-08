@@ -7,15 +7,72 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - id: till_darwin
+    binary: till
+    main: main.go
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    flags:
+      - -tags
+      - sqlite
+
+  - id: till_linux
+    binary: till
+    main: main.go
+    env:
+      - CGO_ENABLED=1
+    flags:
+      - -tags
+      - sqlite
     goos:
       - linux
+    goarch:
+      - amd64
+      - 386
+
+  - id: till_windows_i686
+    binary: till
+    main: main.go
+    ldflags:
+      - "-extldflags '-static'"
+    env:
+      - CGO_ENABLED=1
+      - CC=i686-w64-mingw32-gcc
+      - CXX=i686-w64-mingw32-g++
+    flags:
+      - -tags
+      - sqlite
+    goos:
       - windows
-      - darwin
+    goarch:
+      - 386
+
+  - id: till_windows_x64
+    binary: till
+    main: main.go
+    ldflags:
+      - "-extldflags '-static'"
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    flags:
+      - -tags
+      - sqlite
+    goos:
+      - windows
+    goarch:
+      - amd64
+
 archives:
   - replacements:
-      darwin: Darwin
+      darwin: Darwin_MacOS
       linux: Linux
       windows: Windows
       386: i386

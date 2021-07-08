@@ -9,7 +9,10 @@ on:
       - 'v*'
 jobs:
   goreleaser:
+    name: Release
     runs-on: ubuntu-latest
+    container:
+      image: bepsays/ci-goreleaser:1.16.5
     steps:
       -
         name: Checkout
