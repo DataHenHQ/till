@@ -14,6 +14,7 @@ builds:
       - darwin
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -35,6 +36,7 @@ builds:
     goarch:
       - amd64
       - 386
+      - arm64
 
   - id: till_windows_i686
     binary: till
