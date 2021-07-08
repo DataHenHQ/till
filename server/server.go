@@ -15,6 +15,7 @@ import (
 	"github.com/DataHenHQ/till/server/handlers"
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/logger"
 
 	"github.com/DataHenHQ/tillup"
 )
@@ -28,6 +29,7 @@ var (
 	DBPath       string
 	Interceptors []interceptors.Interceptor
 	Cache        cache.Config
+	LoggerConfig logger.Config
 
 	// current instance from the server
 	curri tillclient.Instance
@@ -63,7 +65,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	curri = *i
 
 	// Set the features, etc for this instance
-	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, Cache); err != nil {
+	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, Cache, LoggerConfig); err != nil {
 		log.Fatal(err)
 	}
 
@@ -72,12 +74,14 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 
 // Serve runs the Till server to start accepting the proxy requests
 func Serve(port string, apiport string) {
+	defer tillup.Close()
 
 	// Pass necessary vars to the handlers
 	handlers.SetEmbeddedTemplates(&embeddedTemplates)
 	handlers.InstanceName = InstanceName
 	handlers.CurrentInstance = &curri
 	handlers.StatMu = &StatMu
+	handlers.LoggerConfig = LoggerConfig
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.

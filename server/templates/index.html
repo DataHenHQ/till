@@ -1,5 +1,11 @@
 <h1>DataHen Till</h1>
-<p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
+<p>
+  <a href="/">Home</a>
+  {{if not LoggerConfig.Disabled}}
+    &bull; 
+    <a href="/requests">Request Log</a>
+  {{end}}
+</p>
 
 
 <h2>Instance</h2>

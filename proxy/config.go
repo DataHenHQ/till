@@ -6,8 +6,8 @@ import (
 
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/cache/freshness"
-	"github.com/DataHenHQ/tillup/cache/ttl"
 	"github.com/DataHenHQ/tillup/sessions/sticky"
+	"github.com/DataHenHQ/tillup/ttl"
 )
 
 // PageConfig is where the page configuration is set

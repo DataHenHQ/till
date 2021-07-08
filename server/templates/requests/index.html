@@ -8,31 +8,31 @@
   <tr>
     <th colspan="3">Filters:</th>
   </tr>
-  {{if .Filter.GID }}
+  {{if .Filter.Gid }}
     <tr>
       <th>GID</th>
-      <td>{{.Filter.GID}}</td>
+      <td>{{.Filter.Gid}}</td>
       <td><a href='{{appendQueryString .CurrentURL "gid" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
-  {{if .Filter.Cache }}
+  {{if .Filter.CacheHit }}
     <tr>
       <th>Cache</th>
-      <td>{{.Filter.Cache}}</td>
+      <td>{{if (boolval .Filter.CacheHit)}}HIT{{else}}MISS{{end}}</td>
       <td><a href='{{appendQueryString .CurrentURL "cache" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
-  {{if .Filter.Method }}
+  {{if .Filter.RequestMethod }}
     <tr>
       <th>Method</th>
-      <td>{{.Filter.Method}}</td>
+      <td>{{.Filter.RequestMethod}}</td>
       <td><a href='{{appendQueryString .CurrentURL "method" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
-  {{if .Filter.Code }}
+  {{if .Filter.ResponseStatusCode }}
     <tr>
       <th>Code</th>
-      <td>{{.Filter.Code}}</td>
+      <td>{{.Filter.ResponseStatusCode}}</td>
       <td><a href='{{appendQueryString .CurrentURL "code" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
@@ -57,10 +57,10 @@
       <td><a href='{{appendQueryString .CurrentURL "from_content_length" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
-  {{if .Filter.ToResponseSize }}
+  {{if .Filter.ToResponseContentLength }}
     <tr>
       <th>To Content Length</th>
-      <td>{{.Filter.ToResponseSize}}</td>
+      <td>{{.Filter.ToResponseContentLength}}</td>
       <td><a href='{{appendQueryString .CurrentURL "to_content_length" ""}}' title="remove filter">X</a></td>
     </tr>
   {{end}}
@@ -89,7 +89,7 @@
   {{range $i, $item := .Items}}
     <tr>
       <td>
-        <a href='/requests?gid={{ .GID }}' title="{{.GID}}">{{shortGID .GID}}</a>
+        <a href='/requests?gid={{ .Gid }}' title="{{.Gid}}">{{shortGID .Gid}}</a>
       </td>
       <td>
         {{if $item.CacheHit -}}
@@ -101,31 +101,31 @@
       <td>
         <a href='{{appendQueryString $.CurrentURL "method" $item.RequestMethod }}'>{{$item.RequestMethod}}</a>
       </td>
-      <td><a href="/requests/{{.RID}}" title="View Request Info" style="text-decoration: none;">	&#9432;</a></td>
+      <td><a href="/requests/{{.Rid}}" title="View Request Info" style="text-decoration: none;">	&#9432;</a></td>
       <td>
-        {{if $item.ResponseStatus }}
-          <a href="/requests/{{$item.RID}}/content/{{relativepath $item.RequestURL}}" >{{printf "%.120s" $item.RequestURL}}</a>
+        {{if $item.ResponseStatus.Valid }}
+          <a href="/requests/{{$item.Rid}}/content/{{relativepath $item.RequestURL}}" >{{printf "%.120s" $item.RequestURL}}</a>
         {{else}}
         {{printf "%.120s" $item.RequestURL}}
         {{end}}
       </td>
-      <td title="{{$item.ResponseStatus}}">
-        {{if (gt $item.ResponseStatusCode 0) }}
-          <a href='{{appendQueryString $.CurrentURL "code" $item.ResponseStatusCode }}'>{{$item.ResponseStatusCode}}</a>
-          <a href='{{appendQueryString $.CurrentURL "code"  (printf "!%d" $item.ResponseStatusCode) }}' title="exclude {{$item.ResponseStatusCode}} status">!</a>
+      <td title="{{$item.ResponseStatus.String}}">
+        {{if $item.ResponseStatusCode.Valid }}
+          <a href='{{appendQueryString $.CurrentURL "code" $item.ResponseStatusCode.Int64 }}'>{{$item.ResponseStatusCode.Int64}}</a>
+          <a href='{{appendQueryString $.CurrentURL "code"  (printf "!%d" $item.ResponseStatusCode.Int64) }}' title="exclude {{$item.ResponseStatusCode.Int64}} status">!</a>
         {{end}}
       </td>
       <td>
-        {{if (gt $item.ResponseContentLength 0) }}
-          {{$item.ResponseContentLength}}
-          <a href='{{appendQueryString $.CurrentURL "from_content_length" (printf "%d" $item.ResponseContentLength ) }}' title="from content length">F</a>
-          <a href='{{appendQueryString $.CurrentURL "to_content_length" (printf "%d" $item.ResponseContentLength ) }}' title="to content length">T</a>
+        {{if $item.ResponseContentLength.Valid }}
+          {{$item.ResponseContentLength.Int64}}
+          <a href='{{appendQueryString $.CurrentURL "from_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="from content length">F</a>
+          <a href='{{appendQueryString $.CurrentURL "to_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="to content length">T</a>
         {{end}}
       </td>
       <td>
-        {{$item.CreatedAt.Format "2006-01-02 15:04:05"}}
-        <a href='{{appendQueryString $.CurrentURL "from_time" ($item.CreatedAt.Format "2006-01-02T15:04:05Z07:00") }}' title="from time">F</a>
-        <a href='{{appendQueryString $.CurrentURL "to_time" ($item.CreatedAt.Format "2006-01-02T15:04:05Z07:00") }}' title="to time">T</a>
+        {{(intToTime $item.Timestamp).Format "2006-01-02 15:04:05"}}
+        <a href='{{appendQueryString $.CurrentURL "from_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="from time">F</a>
+        <a href='{{appendQueryString $.CurrentURL "to_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="to time">T</a>
       </td>
     </tr>
   {{end}}

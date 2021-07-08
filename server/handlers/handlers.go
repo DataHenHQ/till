@@ -2,14 +2,18 @@ package handlers
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
+	"github.com/DataHenHQ/tillup/logger"
 	"github.com/unrolled/render"
+	"github.com/volatiletech/null/v8"
 )
 
 var (
@@ -21,18 +25,61 @@ var (
 	StatMu *tillclient.InstanceStatMutex
 
 	InstanceName string
+
+	LoggerConfig logger.Config
 )
 
 func SetEmbeddedTemplates(e *embed.FS) {
 	GIDShaRe := regexp.MustCompile(`-([a-zA-Z0-9]+)$`)
 
 	templateFunc := template.FuncMap{
+		"LoggerConfig": func() logger.Config {
+			return LoggerConfig
+		},
+		"jsonToHeader": func(nb null.Bytes) (h http.Header) {
+
+			if nb.IsZero() {
+				return nil
+			}
+
+			if err := json.Unmarshal([]byte(nb.Bytes), &h); err != nil {
+				return nil
+			}
+
+			return h
+		},
+		"jsonToSlice": func(nb null.Bytes) (ss []string) {
+
+			if nb.IsZero() {
+				return nil
+			}
+
+			if err := json.Unmarshal([]byte(nb.Bytes), &ss); err != nil {
+				return nil
+			}
+
+			return ss
+		},
+		"nullGt": func(i null.Int64, exp int) bool {
+			if i.IsZero() {
+				return false
+			}
+			return i.Int64 > int64(exp)
+		},
+		"intToTime": func(i int64) time.Time {
+			return time.Unix(0, i)
+		},
+		"boolval": func(b *bool) bool {
+			return *b
+		},
 		"unescape": func(s string) template.HTML {
 			return template.HTML(s)
 		},
 		"shortGID": func(gid string) string {
 			sha := GIDShaRe.FindStringSubmatch(gid)
-			// sha := ss[1]
+			if len(sha) < 1 {
+				return ""
+			}
 
 			return sha[1][0:5]
 		},
@@ -70,9 +117,8 @@ func SetEmbeddedTemplates(e *embed.FS) {
 				switch v.(type) {
 				case string:
 					s, _ = v.(string)
-				case int:
-					si, _ := v.(int)
-					s = fmt.Sprintf("%d", si)
+				case int, int64:
+					s = fmt.Sprintf("%d", v)
 				}
 
 				// set it as the key or value based on mod 2

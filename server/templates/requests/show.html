@@ -6,9 +6,9 @@
 <table style="text-align: left; vertical-align: top;">
   <tr><th colspan="2"><h2>Info:</h2></th></tr>
   <tr><th>Cache</th><td>{{if .Item.CacheHit}}HIT{{else}}MISS{{end}}</td></tr>
-  <tr><th title="Request ID">RID</th><td>{{.Item.RID}}</td></tr>
-  <tr><th title="Global ID of the request">GID</th><td>{{.Item.GID}}</td></tr>
-  <tr><th>Created At</th><td>{{.Item.CreatedAt.Format "2006-01-02 15:04:05"}}</td></tr>
+  <tr><th title="Request ID">RID</th><td>{{.Item.Rid}}</td></tr>
+  <tr><th title="Global ID of the request">GID</th><td>{{.Item.Gid}}</td></tr>
+  <tr><th>Timestamp</th><td>{{(intToTime .Item.Timestamp).Format "2006-01-02 15:04:05"}}</td></tr>
   
   <tr><th colspan="2">&nbsp;</th></tr>
 
@@ -19,7 +19,7 @@
     <th>Header</th>
     <td>
       <table style="text-align: left; vertical-align: top;">
-        {{ range $key, $values := .Item.RequestHeader }}
+        {{ range $key, $values := (jsonToHeader .Item.RequestHeader )}}
         <tr>
           <th>{{ $key }}</th>
           <td>{{ range $value := $values }} {{$value}} {{end}}</td>
@@ -30,19 +30,19 @@
     </td>
   </tr>
   <tr><th>ContentLength</th><td>{{.Item.RequestContentLength}}</td></tr>
-  <tr><th>Body</th><td>{{printf "%s" .Item.RequestBody}}</td></tr>
+  <tr><th>Body</th><td>{{if .Item.RequestBody.Valid}}{{printf "%s" .Item.RequestBody.Bytes}}{{end}}</td></tr>
 
 
-{{if .Item.ResponseStatus }}
+{{if .Item.ResponseStatus.Valid }}
   <tr><th colspan="2">&nbsp;</th></tr>
   <tr><th colspan="2"><h2>Response:</h2></th></tr>
-  <tr><th>Status</th><td>{{.Item.ResponseStatus}}</td></tr>
-  <tr><th>Proto</th><td>{{.Item.ResponseProto}}</td></tr>
+  <tr><th>Status</th><td>{{.Item.ResponseStatus.String}}</td></tr>
+  <tr><th>Proto</th><td>{{.Item.ResponseProto.String}}</td></tr>
   <tr>
     <th>Header</th>
     <td>
       <table style="text-align: left; vertical-align: top;">
-        {{ range $key, $values := .Item.ResponseHeader }}
+        {{ range $key, $values := (jsonToHeader .Item.ResponseHeader )}}
         <tr>
           <th>{{ $key }}</th>
           <td>{{ range $value := $values }} {{$value}} {{end}}</td>
@@ -52,17 +52,17 @@
       
     </td>
   </tr>
-  <tr><th>ContentLength</th><td>{{if (gt .Item.ResponseContentLength 0)}}{{.Item.ResponseContentLength}}{{end}}</td></tr>
+  <tr><th>ContentLength</th><td>{{if .Item.ResponseContentLength.Valid}}{{.Item.ResponseContentLength.Int64}}{{end}}</td></tr>
   <tr>
     <th>TransferEncoding</th>
     <td>
-      {{ range $value := .Item.ResponseTransferEncoding }} {{$value}} {{end}}
+      {{ range $value := (jsonToSlice .Item.ResponseTransferEncoding) }} {{$value}} {{end}}
     </td>
   </tr>
   <tr>
     <th>Body</th>
     <td>
-      <a href="/requests/{{.Item.RID}}/content/{{relativepath .Item.RequestURL}}" >View Content</a>
+      <a href="/requests/{{.Item.Rid}}/content/{{relativepath .Item.RequestURL}}" >View Content</a>
     </td>
   </tr>
 

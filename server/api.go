@@ -22,9 +22,12 @@ func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error)
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", handlers.IndexHandler)
-	r.HandleFunc("/requests", handlers.RequestIndexHandler)
-	r.HandleFunc("/requests/{rid}", handlers.RequestShowHandler)
-	r.HandleFunc("/requests/{rid}/content", handlers.RequestContentShowHandler)
+
+	if !LoggerConfig.Disabled {
+		r.HandleFunc("/requests", handlers.RequestIndexHandler)
+		r.HandleFunc("/requests/{rid}", handlers.RequestShowHandler)
+		r.HandleFunc("/requests/{rid}/content", handlers.RequestContentShowHandler)
+	}
 
 	// wildcard for content, so that URL path is similar to original request
 	r.PathPrefix("/requests/{rid}/content/").HandlerFunc(handlers.RequestContentShowHandler)

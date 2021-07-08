@@ -14,8 +14,6 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		f          = logger.Filter{}
-		is         []logger.Item
-		p          logger.Pagination
 		err        error
 		perPage    = 100
 		startAfter string
@@ -31,7 +29,7 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 	if q, ok := r.URL.Query()["to_content_length"]; ok && len(q) == 1 {
 		v, _ := strconv.ParseInt(q[0], 10, 64)
 		if err == nil {
-			f.ToResponseSize = &v
+			f.ToResponseContentLength = &v
 		}
 	}
 	if q, ok := r.URL.Query()["from_time"]; ok && len(q) == 1 {
@@ -46,17 +44,28 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 			f.ToTime = v
 		}
 	}
+	if q, ok := r.URL.Query()["url"]; ok && len(q) == 1 {
+		f.RequestURL = q[0]
+	}
 	if q, ok := r.URL.Query()["code"]; ok && len(q) == 1 {
-		f.Code = q[0]
+		f.ResponseStatusCode = q[0]
 	}
 	if q, ok := r.URL.Query()["gid"]; ok && len(q) == 1 {
-		f.GID = q[0]
+		f.Gid = q[0]
 	}
 	if q, ok := r.URL.Query()["cache"]; ok && len(q) == 1 {
-		f.Cache = q[0]
+		val := false
+		switch q[0] {
+		case "HIT":
+			val = true
+		case "MISS":
+			val = false
+		}
+
+		f.CacheHit = &val
 	}
 	if q, ok := r.URL.Query()["method"]; ok && len(q) == 1 {
-		f.Method = q[0]
+		f.RequestMethod = q[0]
 	}
 	if q, ok := r.URL.Query()["start_after"]; ok && len(q) == 1 {
 		startAfter = q[0]
@@ -65,7 +74,7 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 		endBefore = q[0]
 	}
 
-	is, p, err = logger.GetItems(f, perPage, startAfter, endBefore)
+	is, p, err := logger.GetItems(r.Context(), f, perPage, startAfter, endBefore)
 	if err != nil {
 		fmt.Println("error on requests", err)
 	}
@@ -82,7 +91,7 @@ func RequestShowHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	rid := vars["rid"]
 
-	i, err := logger.GetItem(rid)
+	i, err := logger.GetItem(r.Context(), rid)
 	if err != nil {
 		fmt.Println("error on requests", err)
 	}
@@ -96,7 +105,7 @@ func RequestContentShowHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	rid := vars["rid"]
 
-	i, err := logger.GetItem(rid)
+	i, err := logger.GetItem(r.Context(), rid)
 	if err != nil {
 		fmt.Println("error on requests", err)
 	}
@@ -110,7 +119,7 @@ func RequestContentShowHandler(w http.ResponseWriter, r *http.Request) {
 	defer rawConn.Close()
 
 	// build the HTTP response
-	resp := i.BuildHTTPResponse()
+	resp := logger.BuildHTTPResponse(*i)
 
 	// does a raw write of the response into the connection
 	resp.Write(rawConn)

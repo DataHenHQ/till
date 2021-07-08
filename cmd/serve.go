@@ -10,6 +10,7 @@ import (
 	"github.com/DataHenHQ/till/server"
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/logger"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -116,6 +117,16 @@ var serveCmd = &cobra.Command{
 		// Set Har settings
 		proxy.HAR = viper.GetBool("har")
 		proxy.HAROutput = viper.GetString("har-output")
+
+		// Sets logger related configurations
+		var loggerconf logger.Config
+		viper.UnmarshalKey("logger", &loggerconf)
+		if _, err := loggerconf.Validate(); err != nil {
+			log.Fatal("Your config file has invalid logger settings:", err)
+		}
+		loggerconf.SetDefaults()
+		proxy.LoggerConfig = loggerconf
+		server.LoggerConfig = loggerconf
 
 		// start the server
 		server.Serve(port, apiport)

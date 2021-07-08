@@ -17,7 +17,6 @@ import (
 	"github.com/DataHenHQ/datahen/pages"
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/tillup/cache"
-	"github.com/DataHenHQ/tillup/cache/ttl"
 	"github.com/DataHenHQ/tillup/features"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
@@ -71,7 +70,7 @@ var (
 	// HAROutput sets the path of where the har logs will be save as. HAR needs to be set to true, for this to work.
 	HAROutput string
 
-	LogTTL = ttl.Day
+	LoggerConfig logger.Config
 )
 
 func init() {
@@ -163,7 +162,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 			// defer treq.Body.Close()
 			if terr == nil && treq != nil {
 				// record request and response to the logger
-				_, tlerr := logger.StoreItem(p.GID, treq, cresp, LogTTL, time.Now(), true)
+				_, tlerr := logger.StoreItem(p.GID, treq, cresp, time.Now(), true)
 				if tlerr != nil {
 					return nil, tlerr
 				}
@@ -192,7 +191,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	}
 
 	// record request now, and the logger.Response will be set later once the response comes back.
-	rid, tlerr := logger.StoreItem(p.GID, treq, nil, LogTTL, time.Now(), false)
+	rid, tlerr := logger.StoreItem(p.GID, treq, nil, time.Now(), false)
 	if tlerr != nil {
 		return nil, tlerr
 	}
@@ -238,7 +237,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	logReqSummary(p.GID, sreq.Method, sreq.URL.String(), tresp.StatusCode, false)
 
 	// update response on the logger
-	tlerr = logger.UpdateItemResponse(rid, tresp, LogTTL)
+	tlerr = logger.UpdateItemResponse(rid, tresp)
 	if tlerr != nil {
 		return nil, tlerr
 	}
