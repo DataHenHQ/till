@@ -7,7 +7,6 @@ import (
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/cache/freshness"
 	"github.com/DataHenHQ/tillup/sessions/sticky"
-	"github.com/DataHenHQ/tillup/ttl"
 )
 
 // PageConfig is where the page configuration is set
@@ -27,7 +26,6 @@ type PageConfig struct {
 
 	// Cache feature
 	CacheFreshness     freshness.Type
-	CacheTTL           ttl.Type
 	CacheServeFailures bool
 }
 
@@ -55,7 +53,6 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 
 		// Cache feature
 		CacheFreshness:     Cache.Freshness,
-		CacheTTL:           Cache.TTL,
 		CacheServeFailures: Cache.ServeFailures,
 	}
 
@@ -86,12 +83,6 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 	if val := req.Header.Get(cache.FreshnessHeader); val != "" {
 		pconf.CacheFreshness = freshness.ConvToType(val)
 		req.Header.Del(cache.FreshnessHeader)
-	}
-
-	// Get the Cache TTL header
-	if val := req.Header.Get(cache.TTLHeader); val != "" {
-		pconf.CacheTTL = ttl.ConvToType(val)
-		req.Header.Del(cache.TTLHeader)
 	}
 
 	// Get the Cache Serve Failures

@@ -86,11 +86,11 @@ var serveCmd = &cobra.Command{
 		}
 
 		// sets the DB path
-		dbpath := viper.GetString("dbpath")
-		if dbpath == "" {
-			dbpath = filepath.Join(tillHomeDir, fmt.Sprintf("%v.db", instance))
+		datadir := viper.GetString("datadir")
+		if datadir == "" {
+			datadir = filepath.Join(tillHomeDir, fmt.Sprintf("%v.data", instance))
 		}
-		server.DBPath = dbpath
+		server.DBPath = datadir
 
 		// sets the interceptors
 		var rs []interceptors.Interceptor
@@ -181,8 +181,9 @@ func init() {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
-	serveCmd.Flags().String("dbpath", "", "Specify the path to the DB that Till uses")
-	if err := viper.BindPFlag("dbpath", serveCmd.Flags().Lookup("dbpath")); err != nil {
+	datadirDesc := fmt.Sprintf("Specify the path to the data directory that this instance uses (default is %v)", filepath.Join(tillHomeDir, "default.data"))
+	serveCmd.Flags().String("datadir", "", datadirDesc)
+	if err := viper.BindPFlag("datadir", serveCmd.Flags().Lookup("datadir")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 

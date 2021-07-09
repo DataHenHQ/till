@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -141,12 +142,12 @@ func logReqSummary(gid, method, url string, respStatus int, cachehit bool) {
 	fmt.Println(cacheType, gid, method, url, respStatus)
 }
 
-func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
+func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
 
 	if features.Allow(features.Cache) && !Cache.Disabled {
 
 		// check if past response exist in the cache. if so, then return it.
-		cresp, err := cache.GetResponse(p.GID, pconf.CacheFreshness, pconf.CacheServeFailures)
+		cresp, err := cache.GetResponse(ctx, p.GID, pconf.CacheFreshness, pconf.CacheServeFailures)
 		if err != nil {
 			return nil, err
 		}
@@ -162,7 +163,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 			// defer treq.Body.Close()
 			if terr == nil && treq != nil {
 				// record request and response to the logger
-				_, tlerr := logger.StoreItem(p.GID, treq, cresp, time.Now(), true)
+				_, tlerr := logger.StoreItem(ctx, p.GID, treq, cresp, time.Now(), true)
 				if tlerr != nil {
 					return nil, tlerr
 				}
@@ -191,7 +192,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	}
 
 	// record request now, and the logger.Response will be set later once the response comes back.
-	rid, tlerr := logger.StoreItem(p.GID, treq, nil, time.Now(), false)
+	rid, tlerr := logger.StoreItem(ctx, p.GID, treq, nil, time.Now(), false)
 	if tlerr != nil {
 		return nil, tlerr
 	}
@@ -223,7 +224,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 
 	if features.Allow(features.Cache) && !Cache.Disabled {
 		// Store the response to cache
-		err := cache.StoreResponse(p.GID, tresp, pconf.CacheTTL, nil)
+		err := cache.StoreResponse(ctx, p.GID, tresp, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -237,7 +238,7 @@ func sendToTarget(sconn net.Conn, sreq *http.Request, scheme string, p *pages.Pa
 	logReqSummary(p.GID, sreq.Method, sreq.URL.String(), tresp.StatusCode, false)
 
 	// update response on the logger
-	tlerr = logger.UpdateItemResponse(rid, tresp)
+	tlerr = logger.UpdateItemResponse(ctx, rid, tresp)
 	if tlerr != nil {
 		return nil, tlerr
 	}

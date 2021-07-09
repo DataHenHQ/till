@@ -62,7 +62,7 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 
 	// Send request to target server
-	tresp, err := sendToTarget(sconn, sreq, scheme, p, pconf, sess)
+	tresp, err := sendToTarget(sreq.Context(), sconn, sreq, scheme, p, pconf, sess)
 	if err != nil {
 		return err
 	}

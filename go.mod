@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/DataHenHQ/datahen v0.0.0-20210206012353-c71b87ce80de
 	github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b
-	github.com/DataHenHQ/tillup v0.0.0-20210708105613-47ae9579babd
+	github.com/DataHenHQ/tillup v0.0.0-20210709114234-66467c0ba324
 	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/google/martian/v3 v3.1.0
