@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
@@ -83,11 +84,10 @@ func Serve(port string, apiport string) {
 	handlers.StatMu = &StatMu
 	handlers.LoggerConfig = LoggerConfig
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 10 seconds.
+	// Wait for os signal to gracefully shutdown the server
 	//
 	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
+	signal.Notify(quit, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
 
 	// Validates this instance with the cloud
 	ok, i := validateInstance()
@@ -124,16 +124,15 @@ func Serve(port string, apiport string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Shutdon api server
+	// Shutdown api server
 	if err := api.server.Shutdown(ctx); err != nil {
-		log.Println("unable to shut down DataHen TIll API server:", err)
+		log.Println("error shutting down DataHen TIll API server:", err)
 	}
 
 	// Shuts down proxy server
 	if err := prox.server.Shutdown(ctx); err != nil {
-		log.Println("unable to shut down DataHen TIll server:", err)
+		log.Println("error shutting down DataHen TIll server:", err)
 	}
-
 }
 
 // Resets the instant stats delta based on what was uploaded
