@@ -9,8 +9,6 @@ import (
 
 	"github.com/DataHenHQ/tillup/features"
 	"github.com/DataHenHQ/tillup/interceptors"
-	"github.com/DataHenHQ/tillup/sessions"
-	"github.com/DataHenHQ/tillup/sessions/sticky"
 )
 
 func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
@@ -51,9 +49,6 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 		log.Println(err)
 	}
 
-	// Create a till session
-	sess := sessions.New()
-
 	// Generate the PageConfig
 	pconf := generatePageConfig(treq)
 	scheme := "https"
@@ -81,19 +76,8 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 		}
 	}
 
-	// If StickySession is allowed, then set the sticky session
-	if features.Allow(features.StickySessions) {
-		s, err := sticky.GetSessionFromRequest(treq, (sessions.PageConfig)(*pconf))
-		if err != nil {
-			return err
-		}
-		if s != nil {
-			sess = s
-		}
-	}
-
 	// Send request to target server
-	tresp, err := sendToTarget(sreq.Context(), sconn, treq, scheme, p, pconf, sess)
+	tresp, err := sendToTarget(sreq.Context(), sconn, treq, scheme, p, pconf)
 	if err != nil {
 		return err
 	}

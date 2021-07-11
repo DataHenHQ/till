@@ -6,7 +6,7 @@ import (
 
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/cache/freshness"
-	"github.com/DataHenHQ/tillup/sessions/sticky"
+	"github.com/DataHenHQ/tillup/sessions"
 )
 
 // PageConfig is where the page configuration is set
@@ -52,8 +52,8 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		IgnoreAllInterceptors: false,
 
 		// Cache feature
-		CacheFreshness:     Cache.Freshness,
-		CacheServeFailures: Cache.ServeFailures,
+		CacheFreshness:     CacheConfig.Freshness,
+		CacheServeFailures: CacheConfig.ServeFailures,
 	}
 
 	if uatype := req.Header.Get(UATypeHeader); uatype != "" {
@@ -62,21 +62,21 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 	}
 
 	// Get the session ID header
-	if sessid := req.Header.Get(sticky.SessionIDHeader); sessid != "" {
+	if sessid := req.Header.Get(sessions.SessionIDHeader); sessid != "" {
 		pconf.SessionID = sessid
-		req.Header.Del(sticky.SessionIDHeader)
+		req.Header.Del(sessions.SessionIDHeader)
 	}
 
 	// Get the Sticky UA header
-	if val := req.Header.Get(sticky.StickyUAHeader); val != "" {
+	if val := req.Header.Get(sessions.StickyUAHeader); val != "" {
 		pconf.StickyUA, _ = strconv.ParseBool(val)
-		req.Header.Del(sticky.StickyUAHeader)
+		req.Header.Del(sessions.StickyUAHeader)
 	}
 
 	// Get the Sticky Cookies header
-	if val := req.Header.Get(sticky.StickyCookiesHeader); val != "" {
+	if val := req.Header.Get(sessions.StickyCookiesHeader); val != "" {
 		pconf.StickyCookies, _ = strconv.ParseBool(val)
-		req.Header.Del(sticky.StickyCookiesHeader)
+		req.Header.Del(sessions.StickyCookiesHeader)
 	}
 
 	// Get the Cache Freshness header

@@ -17,20 +17,22 @@ import (
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 	"github.com/DataHenHQ/tillup/logger"
+	"github.com/DataHenHQ/tillup/sessions"
 
 	"github.com/DataHenHQ/tillup"
 )
 
 var (
-	Token        string
-	InstanceName string
-	StatMu       tillclient.InstanceStatMutex
-	ProxyURLs    = []string{}
-	ProxyCount   = 0
-	DBPath       string
-	Interceptors []interceptors.Interceptor
-	Cache        cache.Config
-	LoggerConfig logger.Config
+	Token          string
+	InstanceName   string
+	StatMu         tillclient.InstanceStatMutex
+	ProxyURLs      = []string{}
+	ProxyCount     = 0
+	DBPath         string
+	Interceptors   []interceptors.Interceptor
+	CacheConfig    cache.Config
+	LoggerConfig   logger.Config
+	SessionsConfig sessions.Config
 
 	// current instance from the server
 	curri tillclient.Instance
@@ -66,7 +68,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	curri = *i
 
 	// Set the features, etc for this instance
-	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, Cache, LoggerConfig); err != nil {
+	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, SessionsConfig, CacheConfig, LoggerConfig); err != nil {
 		log.Fatal(err)
 	}
 

@@ -7,12 +7,11 @@ import (
 
 	"github.com/DataHenHQ/tillup/features"
 	"github.com/DataHenHQ/tillup/interceptors"
-	"github.com/DataHenHQ/tillup/sessions"
-	"github.com/DataHenHQ/tillup/sessions/sticky"
 )
 
 // HandleHTTP proxies the request from source to target
 func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
+
 	// Hijack the source connection
 	sconn, _, err := sw.(http.Hijacker).Hijack()
 	if err != nil {
@@ -21,9 +20,6 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 		return e
 	}
 	defer sconn.Close()
-
-	// Create a till session
-	sess := sessions.New()
 
 	// Generate the Page
 	pconf := generatePageConfig(sreq)
@@ -50,19 +46,8 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 		}
 	}
 
-	// If StickySession is allowed, then set the sticky session
-	if features.Allow(features.StickySessions) {
-		s, err := sticky.GetSessionFromRequest(sreq, (sessions.PageConfig)(*pconf))
-		if err != nil {
-			return err
-		}
-		if s != nil {
-			sess = s
-		}
-	}
-
 	// Send request to target server
-	tresp, err := sendToTarget(sreq.Context(), sconn, sreq, scheme, p, pconf, sess)
+	tresp, err := sendToTarget(sreq.Context(), sconn, sreq, scheme, p, pconf)
 	if err != nil {
 		return err
 	}

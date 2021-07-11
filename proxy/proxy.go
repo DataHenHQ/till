@@ -21,7 +21,6 @@ import (
 	"github.com/DataHenHQ/tillup/features"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
-	"github.com/DataHenHQ/tillup/sessions/sticky"
 	"github.com/DataHenHQ/useragent"
 	"github.com/google/martian/v3/har"
 	"golang.org/x/net/publicsuffix"
@@ -62,7 +61,7 @@ var (
 	StatMu *tillclient.InstanceStatMutex
 
 	// Cache is the cache specific config
-	Cache cache.Config
+	CacheConfig cache.Config
 
 	// HAR is a flag that enables HAR logging.
 	// if enabled, logs to stdout by default
@@ -71,7 +70,11 @@ var (
 	// HAROutput sets the path of where the har logs will be save as. HAR needs to be set to true, for this to work.
 	HAROutput string
 
+	// LoggerConfig is the logger specific config
 	LoggerConfig logger.Config
+
+	// SessionsConfig is the sessions specific config
+	SessionsConfig sessions.Config
 )
 
 func init() {
@@ -142,9 +145,10 @@ func logReqSummary(gid, method, url string, respStatus int, cachehit bool) {
 	fmt.Println(cacheType, gid, method, url, respStatus)
 }
 
-func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig, sess *sessions.Session) (tresp *http.Response, err error) {
+func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, scheme string, p *pages.Page, pconf *PageConfig) (tresp *http.Response, err error) {
+	var sess *sessions.Session
 
-	if features.Allow(features.Cache) && !Cache.Disabled {
+	if features.Allow(features.Cache) && !CacheConfig.Disabled {
 
 		// check if past response exist in the cache. if so, then return it.
 		cresp, err := cache.GetResponse(ctx, p.GID, pconf.CacheFreshness, pconf.CacheServeFailures)
@@ -185,6 +189,17 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 
 	}
 
+	// If StickySession is allowed, then set the sticky session
+	if features.Allow(features.StickySessions) && pconf.SessionID != "" {
+
+		// get a session, or a create a new one if it doesn't exist yet.
+		sess, err = sessions.GetOrCreateStickySession(ctx, pconf.SessionID, (sessions.PageConfig)(*pconf))
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
 	// build the target request from the source request
 	tclient, treq, err := buildTargetRequest(scheme, sreq, pconf, sess, p)
 	if err != nil {
@@ -215,14 +230,17 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 	}
 
 	// save the cookies from cookiejar to the session
-	if !sess.IsZero() {
+	if sess != nil && !sess.IsZero() {
 		if pconf.StickyCookies {
-			sess.Cookies = tclient.Jar.Cookies(treq.URL)
+			if sess.Cookies == nil {
+				sess.Cookies = sessions.CookieMap{}
+			}
+			sess.Cookies.Set(treq.URL, tclient.Jar.Cookies(treq.URL))
 		}
-		sticky.SaveSession(sess)
+		sessions.SaveSession(ctx, sess)
 	}
 
-	if features.Allow(features.Cache) && !Cache.Disabled {
+	if features.Allow(features.Cache) && !CacheConfig.Disabled {
 		// Store the response to cache
 		err := cache.StoreResponse(ctx, p.GID, tresp, nil)
 		if err != nil {
@@ -277,7 +295,10 @@ func buildTargetRequest(scheme string, sreq *http.Request, pconf *PageConfig, se
 	if pconf.UseProxy {
 
 		// using till session's proxy URL, or generate random proxy
-		u := sess.ProxyURL
+		var u string
+		if sess != nil {
+			u = sess.ProxyURL
+		}
 		if u == "" {
 			u = getRandom(ProxyURLs)
 		}
@@ -321,9 +342,9 @@ func buildTargetRequest(scheme string, sreq *http.Request, pconf *PageConfig, se
 	treq.Host = u.Host
 
 	// if there are cookies on the session, set it in the cookiejar
-	if len(sess.Cookies) > 0 {
+	if sess != nil && len(sess.Cookies) > 0 {
 		if pconf.StickyCookies {
-			tclient.Jar.SetCookies(treq.URL, sess.Cookies)
+			tclient.Jar.SetCookies(treq.URL, sess.Cookies.Get(u))
 		}
 	}
 
@@ -340,7 +361,10 @@ func buildTargetRequest(scheme string, sreq *http.Request, pconf *PageConfig, se
 	if ForceUA {
 
 		// using till session's user agent, or generate random one
-		ua := sess.UA
+		var ua string
+		if sess != nil {
+			ua = sess.UserAgent
+		}
 		if ua == "" {
 			ua, err = generateRandomUA(UAType)
 			if err != nil {

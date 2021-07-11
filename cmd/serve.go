@@ -11,6 +11,7 @@ import (
 	"github.com/DataHenHQ/tillup/cache"
 	"github.com/DataHenHQ/tillup/interceptors"
 	"github.com/DataHenHQ/tillup/logger"
+	"github.com/DataHenHQ/tillup/sessions"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -104,6 +105,16 @@ var serveCmd = &cobra.Command{
 			server.Interceptors = rs
 		}
 
+		// Sets sessions related configurations
+		var sessionsconf sessions.Config
+		viper.UnmarshalKey("sessions", &sessionsconf)
+		if _, err := sessionsconf.Validate(); err != nil {
+			log.Fatal("Your config file has invalid sessions settings:", err)
+		}
+		sessionsconf.SetDefaults()
+		server.SessionsConfig = sessionsconf
+		proxy.SessionsConfig = sessionsconf
+
 		// Sets cache related configurations
 		var cacheconf cache.Config
 		viper.UnmarshalKey("cache", &cacheconf)
@@ -111,8 +122,8 @@ var serveCmd = &cobra.Command{
 			log.Fatal("Your config file has invalid cache settings:", err)
 		}
 		cacheconf.SetDefaults()
-		server.Cache = cacheconf
-		proxy.Cache = cacheconf
+		server.CacheConfig = cacheconf
+		proxy.CacheConfig = cacheconf
 
 		// Set Har settings
 		proxy.HAR = viper.GetBool("har")
