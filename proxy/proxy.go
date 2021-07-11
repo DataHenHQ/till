@@ -256,7 +256,7 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 	logReqSummary(p.GID, sreq.Method, sreq.URL.String(), tresp.StatusCode, false)
 
 	// update response on the logger
-	tlerr = logger.UpdateItemResponse(ctx, rid, tresp)
+	tlerr = logger.UpdateItemResponse(ctx, rid, tresp, sess)
 	if tlerr != nil {
 		return nil, tlerr
 	}
