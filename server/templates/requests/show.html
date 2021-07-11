@@ -8,8 +8,48 @@
   <tr><th>Cache</th><td>{{if .Item.CacheHit}}HIT{{else}}MISS{{end}}</td></tr>
   <tr><th title="Request ID">RID</th><td>{{.Item.Rid}}</td></tr>
   <tr><th title="Global ID of the request">GID</th><td>{{.Item.Gid}}</td></tr>
+  <tr><th title="Session ID of the request">SID</th><td>{{.Item.SessionID.String}}</td></tr>
   <tr><th>Timestamp</th><td>{{(intToTime .Item.Timestamp).Format "2006-01-02 15:04:05"}}</td></tr>
+
+  <tr><th colspan="2">&nbsp;</th></tr>
+  <tr><th colspan="2"><h2>Config:</h2></th></tr>
   
+  {{$pconf := (jsonToPageConfig .Item.PageConfig )}}
+  <tr><th>ForceUA</th><td>{{$pconf.ForceUA}}</td></tr>
+  <tr><th>UaType</th><td>{{$pconf.UaType}}</td></tr>
+  <tr><th>UseProxy</th><td>{{$pconf.UseProxy}}</td></tr>
+  <tr><th>StickyCookies</th><td>{{$pconf.StickyCookies}}</td></tr>
+  <tr><th>StickyUA</th><td>{{$pconf.StickyUA}}</td></tr>
+  <tr><th>IgnoreInterceptors</th><td>{{$pconf.IgnoreInterceptors}}</td></tr>
+  <tr><th>IgnoreAllInterceptors</th><td>{{$pconf.IgnoreAllInterceptors}}</td></tr>
+  <tr><th>CacheFreshness</th><td>{{$pconf.CacheFreshness}}</td></tr>
+  <tr><th>CacheServeFailures</th><td>{{$pconf.CacheServeFailures}}</td></tr>
+
+  {{if .Item.Session.Valid}}
+    <tr><th colspan="2">&nbsp;</th></tr>
+    <tr><th colspan="2"><h2>Session:</h2></th></tr>
+
+    {{$sess := (jsonToSession .Item.Session )}}
+    <tr><th>Session ID</th><td>{{$sess.ID}}</td></tr>
+    <tr><th>User Agent</th><td>{{$sess.UserAgent}}</td></tr>
+    <tr><th>Proxy IP</th><td>{{hostname $sess.ProxyURL}}</td></tr>
+    <tr>
+      <th>Cookie Jar</th>
+      <td>
+        <table style="text-align: left; vertical-align: top;">
+          {{ range $key, $values := $sess.Cookies}}
+          <tr>
+            <th>{{ $key }}</th>
+            <td>{{ range $value := $values }} {{$value}} {{end}}</td>
+          </tr>
+          {{ end }}
+        </table>
+        
+      </td>
+    </tr>
+    <tr><th>CreatedAt</th><td>{{$sess.CreatedAt.Format "2006-01-02 15:04:05"}}</td></tr>
+    
+  {{end}}
   <tr><th colspan="2">&nbsp;</th></tr>
 
   <tr><th colspan="2"><h2>Request:</h2></th></tr>

@@ -43,7 +43,7 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		UaType:   UAType,
 		UseProxy: useProxy,
 
-		// StickySessions feature
+		// StickySessions feature defaults to true for sticky cookies and sticky ua
 		StickyCookies: true,
 		StickyUA:      true,
 

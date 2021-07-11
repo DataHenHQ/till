@@ -53,6 +53,9 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 	if q, ok := r.URL.Query()["gid"]; ok && len(q) == 1 {
 		f.Gid = q[0]
 	}
+	if q, ok := r.URL.Query()["session_id"]; ok && len(q) == 1 {
+		f.SessionID = q[0]
+	}
 	if q, ok := r.URL.Query()["cache"]; ok && len(q) == 1 {
 		val := false
 		switch q[0] {

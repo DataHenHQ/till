@@ -50,6 +50,8 @@ github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b h1:IRsyTwmpJhiql
 github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b/go.mod h1:/9dbu45iCO7JnjZDR+Z5eK6OpU6D7fF7bS198VWG7mU=
 github.com/DataHenHQ/tillup v0.0.0-20210711204451-3da0dd1cfdb4 h1:kSWfF1CjY6alxvFvcpsDWeHuTdZ+KAiOJVcNchSfGuU=
 github.com/DataHenHQ/tillup v0.0.0-20210711204451-3da0dd1cfdb4/go.mod h1:6A68venbwWaWloquXxUINEix43/iNnGc5E0sRvgwPsA=
+github.com/DataHenHQ/tillup v0.0.0-20210711220324-49a957f0eb7d h1:l9lDKuM/KXF7wQNuZbSYtRvaEmjeFmQWghtvlaD/Bvw=
+github.com/DataHenHQ/tillup v0.0.0-20210711220324-49a957f0eb7d/go.mod h1:6A68venbwWaWloquXxUINEix43/iNnGc5E0sRvgwPsA=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c h1:BvenCGZnVg2fVd9VrlD3ijHCR4dIdYbIr4v3zAudweU=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c/go.mod h1:rpV6pSits3VF8DkRnEkxmaVoTabhph2o/hTTX2aAwoE=
 github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5/go.mod h1:tTuCMEN+UleMWgg9dVx4Hu52b1bJo+59jBh3ajtinzw=

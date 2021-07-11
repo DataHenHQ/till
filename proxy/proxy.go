@@ -167,7 +167,7 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 			// defer treq.Body.Close()
 			if terr == nil && treq != nil {
 				// record request and response to the logger
-				_, tlerr := logger.StoreItem(ctx, p.GID, treq, cresp, time.Now(), true)
+				_, tlerr := logger.StoreItem(ctx, p.GID, treq, cresp, time.Now(), true, (sessions.PageConfig)(*pconf), sess)
 				if tlerr != nil {
 					return nil, tlerr
 				}
@@ -207,7 +207,7 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 	}
 
 	// record request now, and the logger.Response will be set later once the response comes back.
-	rid, tlerr := logger.StoreItem(ctx, p.GID, treq, nil, time.Now(), false)
+	rid, tlerr := logger.StoreItem(ctx, p.GID, treq, nil, time.Now(), false, (sessions.PageConfig)(*pconf), sess)
 	if tlerr != nil {
 		return nil, tlerr
 	}

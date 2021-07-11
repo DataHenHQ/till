@@ -12,6 +12,7 @@ import (
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/tillup/logger"
+	"github.com/DataHenHQ/tillup/sessions"
 	"github.com/unrolled/render"
 	"github.com/volatiletech/null/v8"
 )
@@ -47,6 +48,30 @@ func SetEmbeddedTemplates(e *embed.FS) {
 			}
 
 			return h
+		},
+		"jsonToPageConfig": func(nb null.Bytes) (pconf sessions.PageConfig) {
+
+			if nb.IsZero() {
+				return pconf
+			}
+
+			if err := json.Unmarshal([]byte(nb.Bytes), &pconf); err != nil {
+				return pconf
+			}
+
+			return pconf
+		},
+		"jsonToSession": func(nb null.Bytes) (sess sessions.Session) {
+
+			if nb.IsZero() {
+				return sess
+			}
+
+			if err := json.Unmarshal([]byte(nb.Bytes), &sess); err != nil {
+				return sess
+			}
+
+			return sess
 		},
 		"jsonToSlice": func(nb null.Bytes) (ss []string) {
 
@@ -93,6 +118,15 @@ func SetEmbeddedTemplates(e *embed.FS) {
 			u.Host = ""
 			u.User = nil
 			return u.String()
+		},
+		// get hostname and port
+		"hostname": func(urlstr string) string {
+			u, err := url.Parse(urlstr)
+			if err != nil {
+				return ""
+			}
+
+			return u.Hostname()
 		},
 		"appendQueryString": func(currurl string, keyvals ...interface{}) string {
 			u, err := url.Parse(currurl)
