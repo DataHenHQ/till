@@ -42,7 +42,7 @@ func NewProxyServer(port string, i *tillclient.Instance) (s *ProxyServer, err er
 }
 
 func (s *ProxyServer) ListenAndServe() {
-	fmt.Printf("Starting Till Proxy server. Instance: %v, port: %v\n", s.instance.GetName(), s.port)
+	fmt.Printf("Starting Till on http://localhost:%v\n", s.port)
 	if err := s.server.ListenAndServe(); err != nil {
 		log.Println("shutting down TIll Proxy server:", err)
 	}

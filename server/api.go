@@ -47,8 +47,8 @@ func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error)
 }
 
 func (s *APIServer) ListenAndServe() {
-	fmt.Printf("Starting DataHen Till API server. Instance: %v, port: %v\n", s.instance.GetName(), s.port)
+	fmt.Printf("Starting Till Web UI on http://localhost:%v\n", s.port)
 	if err := s.server.ListenAndServe(); err != nil {
-		log.Println("shutting down DataHen TIll API server:", err)
+		log.Println("shutting down DataHen TIll Web UI:", err)
 	}
 }
