@@ -76,7 +76,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 }
 
 // Serve runs the Till server to start accepting the proxy requests
-func Serve(port string, apiport string) {
+func Serve(port string, uiport string) {
 	defer tillup.Close()
 
 	// Pass necessary vars to the handlers
@@ -111,13 +111,13 @@ func Serve(port string, apiport string) {
 	}
 	go prox.ListenAndServe()
 
-	// Starts the API server
+	// Starts the UI server
 	//
-	api, err := NewAPIServer(apiport, i)
+	ui, err := NewUIServer(uiport, i)
 	if err != nil {
-		log.Fatal("Unable to start Till API Server")
+		log.Fatal("Unable to start Till UI Server")
 	}
-	go api.ListenAndServe()
+	go ui.ListenAndServe()
 
 	// waits for quit signal from OS
 	<-quit
@@ -126,9 +126,9 @@ func Serve(port string, apiport string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Shutdown api server
-	if err := api.server.Shutdown(ctx); err != nil {
-		log.Println("error shutting down DataHen TIll API server:", err)
+	// Shutdown ui server
+	if err := ui.server.Shutdown(ctx); err != nil {
+		log.Println("error shutting down DataHen TIll UI server:", err)
 	}
 
 	// Shuts down proxy server

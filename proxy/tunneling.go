@@ -83,8 +83,6 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 	}
 	defer tresp.Body.Close()
 
-	// Write the request log
-	defer writeHarLog()
 	defer incrRequestStatDelta()
 
 	// Write response back to the source connection

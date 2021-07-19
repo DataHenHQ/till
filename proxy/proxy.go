@@ -22,7 +22,6 @@ import (
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
 	"github.com/DataHenHQ/useragent"
-	"github.com/google/martian/v3/har"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -53,8 +52,6 @@ var (
 	// ProxyCount is the total count of proxies used.
 	ProxyCount int
 
-	harlogger = har.NewLogger()
-
 	// ReleaseVersion is the version of Till release
 	ReleaseVersion = "dev"
 
@@ -63,28 +60,12 @@ var (
 	// Cache is the cache specific config
 	CacheConfig cache.Config
 
-	// HAR is a flag that enables HAR logging.
-	// if enabled, logs to stdout by default
-	HAR bool
-
-	// HAROutput sets the path of where the har logs will be save as. HAR needs to be set to true, for this to work.
-	HAROutput string
-
 	// LoggerConfig is the logger specific config
 	LoggerConfig logger.Config
 
 	// SessionsConfig is the sessions specific config
 	SessionsConfig sessions.Config
 )
-
-func init() {
-
-	// init har logger
-	harlogger.Export().Log.Creator.Name = "DataHen Till"
-	harlogger.Export().Log.Creator.Version = "dev"
-	harlogger.SetOption(har.PostDataLogging(true))
-	harlogger.SetOption(har.BodyLogging(false))
-}
 
 func NewPageFromRequest(r *http.Request, scheme string, pconf *PageConfig) (p *pages.Page, err error) {
 	p = new(pages.Page)
@@ -162,7 +143,7 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 
 			logReqSummary(p.GID, sreq.Method, sreq.URL.String(), cresp.StatusCode, true)
 
-			// Build the target req and resp specifically for logging to har.
+			// Build the target req and resp specifically for logging.
 			_, treq, terr := buildTargetRequest(scheme, sreq, pconf, sess, p)
 			// defer treq.Body.Close()
 			if terr == nil && treq != nil {
@@ -172,16 +153,6 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 					return nil, tlerr
 				}
 
-				// record response to HAR
-				if HAR {
-					if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
-						return nil, err
-					}
-					if err := harlogger.RecordResponse(p.GetGID(), cresp); err != nil {
-						return nil, err
-					}
-				}
-				// return nil, err
 			}
 
 			return cresp, nil
@@ -210,13 +181,6 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 	rid, tlerr := logger.StoreItem(ctx, p.GID, treq, nil, time.Now(), false, (sessions.PageConfig)(*pconf), sess)
 	if tlerr != nil {
 		return nil, tlerr
-	}
-
-	// record request to HAR
-	if HAR {
-		if err := harlogger.RecordRequest(p.GetGID(), treq); err != nil {
-			return nil, err
-		}
 	}
 
 	// send the actual request to target server
@@ -259,13 +223,6 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 	tlerr = logger.UpdateItemResponse(ctx, rid, tresp, sess)
 	if tlerr != nil {
 		return nil, tlerr
-	}
-
-	// record response to HAR
-	if HAR {
-		if err := harlogger.RecordResponse(p.GetGID(), tresp); err != nil {
-			return nil, err
-		}
 	}
 
 	return tresp, err

@@ -25,7 +25,7 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		port := viper.GetString("port")
-		apiport := viper.GetString("apiport")
+		uiport := viper.GetString("uiport")
 		proxy.ReleaseVersion = ReleaseVersion
 		// Load or generate a new CA cert files
 		caCertFile := viper.GetString("ca-cert")
@@ -125,10 +125,6 @@ var serveCmd = &cobra.Command{
 		server.CacheConfig = cacheconf
 		proxy.CacheConfig = cacheconf
 
-		// Set Har settings
-		proxy.HAR = viper.GetBool("har")
-		proxy.HAROutput = viper.GetString("har-output")
-
 		// Sets logger related configurations
 		var loggerconf logger.Config
 		viper.UnmarshalKey("logger", &loggerconf)
@@ -140,7 +136,7 @@ var serveCmd = &cobra.Command{
 		server.LoggerConfig = loggerconf
 
 		// start the server
-		server.Serve(port, apiport)
+		server.Serve(port, uiport)
 	},
 }
 
@@ -162,8 +158,8 @@ func init() {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
-	serveCmd.Flags().String("apiport", "2980", "Specify the port to run the API server")
-	if err := viper.BindPFlag("apiport", serveCmd.Flags().Lookup("apiport")); err != nil {
+	serveCmd.Flags().String("uiport", "2980", "Specify the port to run the UI server")
+	if err := viper.BindPFlag("uiport", serveCmd.Flags().Lookup("uiport")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
@@ -195,16 +191,6 @@ func init() {
 	datadirDesc := fmt.Sprintf("Specify the path to the data directory that this instance uses (default is %v)", filepath.Join(tillHomeDir, "default.data"))
 	serveCmd.Flags().String("datadir", "", datadirDesc)
 	if err := viper.BindPFlag("datadir", serveCmd.Flags().Lookup("datadir")); err != nil {
-		log.Fatal("Unable to bind flag:", err)
-	}
-
-	serveCmd.Flags().Bool("har", false, "When set to true, will log requests in HAR format")
-	if err := viper.BindPFlag("har", serveCmd.Flags().Lookup("har")); err != nil {
-		log.Fatal("Unable to bind flag:", err)
-	}
-
-	serveCmd.Flags().String("har-output", "", "Specify the path to the HAR output log that Till will save to")
-	if err := viper.BindPFlag("har-output", serveCmd.Flags().Lookup("har-output")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 

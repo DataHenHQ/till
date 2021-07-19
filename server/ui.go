@@ -11,13 +11,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type APIServer struct {
+type UIServer struct {
 	server   *http.Server
 	port     string
 	instance *tillclient.Instance
 }
 
-func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error) {
+func NewUIServer(port string, i *tillclient.Instance) (s *UIServer, err error) {
 
 	r := mux.NewRouter()
 
@@ -32,7 +32,7 @@ func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error)
 	// wildcard for content, so that URL path is similar to original request
 	r.PathPrefix("/requests/{rid}/content/").HandlerFunc(handlers.RequestContentShowHandler)
 
-	s = &APIServer{
+	s = &UIServer{
 		server: &http.Server{
 			Addr:         fmt.Sprintf(":%v", port),
 			ReadTimeout:  1 * time.Minute,
@@ -46,9 +46,9 @@ func NewAPIServer(port string, i *tillclient.Instance) (s *APIServer, err error)
 	return s, nil
 }
 
-func (s *APIServer) ListenAndServe() {
-	fmt.Printf("Starting Till Web UI on http://localhost:%v\n", s.port)
+func (s *UIServer) ListenAndServe() {
+	fmt.Printf("Starting Till UI on http://localhost:%v\n", s.port)
 	if err := s.server.ListenAndServe(); err != nil {
-		log.Println("shutting down DataHen TIll Web UI:", err)
+		log.Println("shutting down DataHen TIll UI:", err)
 	}
 }

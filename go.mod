@@ -8,7 +8,6 @@ require (
 	github.com/DataHenHQ/tillup v0.0.0-20210715162803-77717fc7e0d2
 	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c
 	github.com/go-resty/resty/v2 v2.6.0
-	github.com/google/martian/v3 v3.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
