@@ -80,10 +80,6 @@ Till will log your requests based on successful request (2XX status code) or fai
 #### Request Log UI
 Interactive Web UI that allows you to make sense of HTTP request history, and troubleshoot what happens during a scraping session.
 
-#### HAR logging
-You can also export the log in the [HAR](https://en.wikipedia.org/wiki/HAR_(file_format)) format, and you can open this in your Chrome Browser's (or other browsers) inspector tool.
-
-
 
 ### HTTP Response caching
 Till caches all of your HTTP responses (and their contents), so that as needed, your web scraper will reuse the cache without needing to do another HTTP request to the target server. 
