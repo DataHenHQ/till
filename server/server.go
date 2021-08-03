@@ -145,8 +145,9 @@ func resetInstanceStatDelta(is tillclient.InstanceStat) {
 	// resets the delta by decreasing it by the uploaded stat
 	//
 	*(StatMu.InstanceStat.Requests) = *(StatMu.InstanceStat.Requests) - is.GetRequests()
-	*(StatMu.InstanceStat.InterceptedRequests) = *(StatMu.InstanceStat.InterceptedRequests) - is.GetInterceptedRequests()
+	*(StatMu.InstanceStat.SuccessfulRequests) = *(StatMu.InstanceStat.SuccessfulRequests) - is.GetSuccessfulRequests()
 	*(StatMu.InstanceStat.FailedRequests) = *(StatMu.InstanceStat.FailedRequests) - is.GetFailedRequests()
+	*(StatMu.InstanceStat.InterceptedRequests) = *(StatMu.InstanceStat.InterceptedRequests) - is.GetInterceptedRequests()
 	*(StatMu.InstanceStat.CacheHits) = *(StatMu.InstanceStat.CacheHits) - is.GetCacheHits()
 	*(StatMu.InstanceStat.CacheSets) = *(StatMu.InstanceStat.CacheSets) - is.GetCacheSets()
 

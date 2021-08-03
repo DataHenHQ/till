@@ -136,10 +136,18 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 		if err != nil {
 			return nil, err
 		}
-		// if cachehit ten return the cached response
+		// if cachehit then return the cached response
 		if cresp != nil {
 			// Increment the CacheHits stats
 			incrCacheHitStatDelta()
+
+			// Increment the successful or failed requests, and total requests
+			if sessions.IsSuccess(cresp.StatusCode) {
+				incrSuccessfulRequestStatDelta()
+			} else {
+				incrFailedRequestStatDelta()
+			}
+			incrRequestStatDelta()
 
 			logReqSummary(p.GID, sreq.Method, sreq.URL.String(), cresp.StatusCode, true)
 
@@ -189,9 +197,12 @@ func sendToTarget(ctx context.Context, sconn net.Conn, sreq *http.Request, schem
 		return nil, err
 	}
 
-	if !sessions.IsSuccess(tresp.StatusCode) {
+	if sessions.IsSuccess(tresp.StatusCode) {
+		incrSuccessfulRequestStatDelta()
+	} else {
 		incrFailedRequestStatDelta()
 	}
+	incrRequestStatDelta()
 
 	// save the cookies from cookiejar to the session
 	if sess != nil && !sess.IsZero() {
@@ -414,6 +425,16 @@ func incrFailedRequestStatDelta() {
 
 	// increment the requests counter
 	*(StatMu.InstanceStat.FailedRequests) = *(StatMu.InstanceStat.FailedRequests) + uint64(1)
+	StatMu.Mutex.Unlock()
+
+}
+
+// Atomically increments successful request delta in the instance stat
+func incrSuccessfulRequestStatDelta() {
+	StatMu.Mutex.Lock()
+
+	// increment the requests counter
+	*(StatMu.InstanceStat.SuccessfulRequests) = *(StatMu.InstanceStat.SuccessfulRequests) + uint64(1)
 	StatMu.Mutex.Unlock()
 
 }

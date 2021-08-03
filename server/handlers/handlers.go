@@ -194,8 +194,9 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	Rend.HTML(w, http.StatusOK, "index", map[string]interface{}{
 		"Instance":            InstanceName,
 		"Requests":            CurrentInstance.GetRequests() + int64(*StatMu.Requests),
-		"InterceptedRequests": CurrentInstance.GetInterceptedRequests() + int64(*StatMu.InterceptedRequests),
 		"FailedRequests":      CurrentInstance.GetFailedRequests() + int64(*StatMu.FailedRequests),
+		"SuccessfulRequests":  CurrentInstance.GetSuccessfulRequests() + int64(*StatMu.SuccessfulRequests),
+		"InterceptedRequests": CurrentInstance.GetInterceptedRequests() + int64(*StatMu.InterceptedRequests),
 		"CacheHits":           CurrentInstance.GetCacheHits() + int64(*StatMu.CacheHits),
 		"CacheSets":           CurrentInstance.GetCacheSets() + int64(*StatMu.CacheSets),
 	})

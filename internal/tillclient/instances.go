@@ -18,6 +18,7 @@ type Instance struct {
 	Description         *string             `json:"description,omitempty"`
 	Requests            *int64              `json:"requests,omitempty"`
 	InterceptedRequests *int64              `json:"intercepted_requests,omitempty"`
+	SuccessfulRequests  *int64              `json:"successful_requests,omitempty"`
 	FailedRequests      *int64              `json:"failed_requests,omitempty"`
 	CacheHits           *int64              `json:"cache_hits,omitempty"`
 	CacheSets           *int64              `json:"cache_sets,omitempty"`
@@ -96,12 +97,12 @@ func (i *Instance) GetRequests() int64 {
 	return *i.Requests
 }
 
-// GetInterceptedRequests returns the InterceptedRequests field if it's non-nil, zero value otherwise.
-func (i *Instance) GetInterceptedRequests() int64 {
-	if i == nil || i.InterceptedRequests == nil {
+// GetSuccessfulRequests returns the SuccessfulRequests field if it's non-nil, zero value otherwise.
+func (i *Instance) GetSuccessfulRequests() int64 {
+	if i == nil || i.SuccessfulRequests == nil {
 		return 0
 	}
-	return *i.InterceptedRequests
+	return *i.SuccessfulRequests
 }
 
 // GetFailedRequests returns the FailedRequests field if it's non-nil, zero value otherwise.
@@ -110,6 +111,14 @@ func (i *Instance) GetFailedRequests() int64 {
 		return 0
 	}
 	return *i.FailedRequests
+}
+
+// GetInterceptedRequests returns the InterceptedRequests field if it's non-nil, zero value otherwise.
+func (i *Instance) GetInterceptedRequests() int64 {
+	if i == nil || i.InterceptedRequests == nil {
+		return 0
+	}
+	return *i.InterceptedRequests
 }
 
 // GetCacheHits returns the CacheHits field if it's non-nil, zero value otherwise.

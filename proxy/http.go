@@ -39,8 +39,7 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 
 			writeToSource(sconn, resp, p)
 
-			// Increment reqs and intercepted reqs stats
-			incrRequestStatDelta()
+			// Increment intercepted reqs stats
 			incrInterceptedRequestStatDelta()
 			return nil
 		}
@@ -52,8 +51,6 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 		return err
 	}
 	defer tresp.Body.Close()
-
-	defer incrRequestStatDelta()
 
 	// Write response back to the source connection
 	writeToSource(sconn, tresp, p)

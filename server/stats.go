@@ -15,8 +15,9 @@ func newInstanceStatMutex() tillclient.InstanceStatMutex {
 		Mutex: &sync.Mutex{},
 		InstanceStat: tillclient.InstanceStat{
 			Requests:            newZeroStat(),
-			InterceptedRequests: newZeroStat(),
+			SuccessfulRequests:  newZeroStat(),
 			FailedRequests:      newZeroStat(),
+			InterceptedRequests: newZeroStat(),
 			CacheHits:           newZeroStat(),
 			CacheSets:           newZeroStat(),
 			Name:                &InstanceName,
@@ -31,7 +32,7 @@ func startRecurringStatUpdate() {
 	}
 
 	for {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 5)
 		// Take a snapshot of the state of the instate stat by doing deep copy
 		is := StatMu.InstanceStat.DeepCopy()
 
