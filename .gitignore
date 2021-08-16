@@ -18,3 +18,5 @@ __debug_bin
 dist
 
 .env.*
+
+examples/nodejs/node_modules
