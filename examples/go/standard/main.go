@@ -53,8 +53,6 @@ func main() {
 	//
 
 	// create a new POST request
-	// values := map[string]string{"hello": "world"}
-	// jsonData, err := json.Marshal(values)
 	jsonData := `{"hello":"world"}`
 
 	preq, err := http.NewRequest("POST", "https://postman-echo.com/post", bytes.NewBuffer([]byte(jsonData)))

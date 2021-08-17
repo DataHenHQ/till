@@ -2,10 +2,10 @@
 
 You can integrate Till with Node.js based scrapers.
 
-## Install Till
+## 1. Install Till
 Follow the instructions to [install Till](https://till.datahen.com/docs/installation)
 
-## Run the example files
+## 2. Run the example files
 
 The [get.js](get.js) file shows an example of a GET request.
 ```bash

@@ -189,10 +189,16 @@ Read more about [certutil](https://web.archive.org/web/20160612045445/http://win
 
 ### Node.js
 
-The [Node.js example](examples/nodejs/) demonstrates how to integrate Till with Node.js based scrapers.
+#### Plain
+The [Node.js example](examples/nodejs/plain/) demonstrates how to integrate Till with Node.js based scrapers.
+
+#### Puppeteer
+The [Puppeteer example](examples/nodejs/puppeteer/) demonstrates how to integrate Till with Puppeteer.
 
 ### Go
 
+#### net/http
 The [Go net/http example](examples/go/standard) demonstrates how to integrate Till with Go's net/http standard library.
 
+#### Colly
 The [Go Colly example](examples/go/colly) demonstrates how to integrate Till with [Colly](https://github.com/gocolly/colly).
