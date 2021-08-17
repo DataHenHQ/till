@@ -190,3 +190,7 @@ Read more about [certutil](https://web.archive.org/web/20160612045445/http://win
 ### Node.js
 
 The [following example](examples/nodejs/) demonstrates how to integrate Till with Node.js based scrapers.
+
+### Go
+
+The [following example](examples/go/standard) demonstrates how to integrate Till with Go's net/http standard library.
