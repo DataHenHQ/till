@@ -202,3 +202,8 @@ The [Go net/http example](examples/go/standard) demonstrates how to integrate Ti
 
 #### Colly
 The [Go Colly example](examples/go/colly) demonstrates how to integrate Till with [Colly](https://github.com/gocolly/colly).
+
+### Ruby
+
+#### Kimurai
+The [Ruby's Kimurai framework example](examples/ruby/kimurai) demonstrates how to integrate Till with Ruby's [Kimurai framework](https://github.com/vifreefly/kimuraframework).
