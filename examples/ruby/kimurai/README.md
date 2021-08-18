@@ -16,3 +16,7 @@ $ bundle install
 # Run the scraper
 $ ruby example.rb
 ```
+
+### 3. Verify that it works
+
+Visit the Till UI at [http://localhost:2980/requests](http://localhost:2980/requests) to see that your new requests are shown.
