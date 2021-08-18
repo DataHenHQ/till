@@ -4,8 +4,8 @@ The example in [this directory](tutorial/) was taken from Scrapy's [tutorial pag
 
 To integrate with Till, we only need to do two things:
 
-1. On [middlewares.py](tutorial/tutorial/middlewares.py) file, add the `TillMiddleware` class.
-2. On [settings.py](tutorial/tutorial/settings.py) file, enable the downloader middlewares and add the `tutorial.middlewares.TillMiddleware` key.
+1. On [middlewares.py](tutorial/tutorial/middlewares.py#L14) file, add the `TillMiddleware` class.
+2. On [settings.py](tutorial/tutorial/settings.py#L54) file, enable the downloader middlewares and add the `tutorial.middlewares.TillMiddleware` key.
 
 ## 1. Install Till
 Follow the instructions to [install Till](https://till.datahen.com/docs/installation)
