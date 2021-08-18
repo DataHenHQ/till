@@ -187,6 +187,12 @@ Read more about [certutil](https://web.archive.org/web/20160612045445/http://win
 
 ## Till Integrations
 
+### Python
+
+#### Scrapy
+The [Scrapy example](examples/python/scrapy/) demonstrates how to integrate Till with Python's [Scrapy framework](https://github.com/scrapy/scrapy).
+
+
 ### Node.js
 
 #### Plain
