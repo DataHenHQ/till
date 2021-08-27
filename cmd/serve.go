@@ -12,6 +12,7 @@ import (
 	"github.com/DataHenHQ/tillup/interceptors"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
+	"github.com/DataHenHQ/useragent"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,6 +39,16 @@ var serveCmd = &cobra.Command{
 		proxy.UAType = viper.GetString("ua-type")
 		if proxy.ForceUA {
 			fmt.Printf("Till is currently configured to override all User-Agent headers with random %v browsers\n", proxy.UAType)
+		}
+		uaConfigFile := viper.GetString("ua-config-file")
+		if uaConfigFile != "" {
+			err := useragent.LoadUAConfig(uaConfigFile)
+			if err != nil {
+				fmt.Println("Problem loading the ua-config-file:", err)
+				fmt.Println("aborting server")
+				return
+			}
+			fmt.Printf("Using ua-config-file to generate user-agent: %v\n", uaConfigFile)
 		}
 
 		// set the Token
@@ -180,6 +191,11 @@ func init() {
 
 	serveCmd.Flags().String("ua-type", "desktop", "Specify what kind of browser user-agent to generate. Values can either be \"desktop\" or \"mobile\"")
 	if err := viper.BindPFlag("ua-type", serveCmd.Flags().Lookup("ua-type")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	serveCmd.Flags().String("ua-config-file", "", "Specify the path to a JSON file that contains a custom user-agent configuration.")
+	if err := viper.BindPFlag("ua-config-file", serveCmd.Flags().Lookup("ua-config-file")); err != nil {
 		log.Fatal("Unable to bind flag:", err)
 	}
 
