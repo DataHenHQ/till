@@ -8,22 +8,22 @@ Till was architected to follow best practices that [DataHen](https://www.datahen
 ### Till easily integrates with your existing scrapers...
 written in languages such as:
 
-<img  height="50" title="Python" style="padding:6px 23px 6px 0px;" src="img/integrations/python.png">
+<img align="left"  height="50" title="Python" style="padding:6px 23px 6px 0px;" src="img/integrations/python.png">
 
-<img height="50" title="Nodejs" style="padding:6px 23px 6px 0px; " src= "img/integrations/nodejs.png">
-<img height="50" title="Ruby" style="padding:6px 23px 6px 0px;" src= "img/integrations/ruby.png">
+<img align="left" height="50" title="Nodejs" style="padding:6px 23px 6px 0px; " src= "img/integrations/nodejs.png">
+<img align="left" height="50" title="Ruby" style="padding:6px 23px 6px 0px;" src= "img/integrations/ruby.png">
 
-<img height="50" title="Go" style="padding:6px 23px 6px 0px;" src= "img/integrations/go.png">
+<img align="left" height="50" title="Go" style="padding:6px 23px 6px 0px;" src= "img/integrations/go.png">
 
 <img height="50" title="Java" style="padding:6px 23px 6px 0px;" src= "img/integrations/java.png">
 
 or frameworks such as:
 
-<img height="50" title="Scrapy" style="padding:6px 23px 6px 0px;" src= "img/integrations/scrapy.png">
-<img height="80" title="Puppeteer" style="padding:6px 23px 6px 0px;" src= "img/integrations/puppeteer.png">
+<img align="left" height="50" title="Scrapy" style="padding:6px 23px 6px 0px;" src= "img/integrations/scrapy.png">
+<img align="left" height="80" title="Puppeteer" style="padding:6px 23px 6px 0px;" src= "img/integrations/puppeteer.png">
 
-<img height="50" title="Kimurai" style="padding:6px 23px 6px 0px;" src= "img/integrations/kimurai.png">
-<img height="50" title="Colly" style="padding:6px 23px 6px 0px;" src= "img/integrations/colly.png">
+<img align="left" height="50" title="Kimurai" style="padding:6px 23px 6px 0px;" src= "img/integrations/kimurai.png">
+<img align="left" height="50" title="Colly" style="padding:6px 23px 6px 0px;" src= "img/integrations/colly.png">
 <img height="50" title="Selenium" style="padding:6px 23px 6px 0px;" src= "img/integrations/selenium.png">
 
 or many more...
