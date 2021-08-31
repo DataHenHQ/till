@@ -24,9 +24,13 @@ or frameworks such as:
 
 <img align="left" height="50" title="Kimurai" style="padding:6px 23px 6px 0px;" src= "img/integrations/kimurai.png">
 <img align="left" height="50" title="Colly" style="padding:6px 23px 6px 0px;" src= "img/integrations/colly.png">
-<img height="50" title="Selenium" style="padding:6px 23px 6px 0px;" src= "img/integrations/selenium.png">
+<img align="left" height="50" title="Selenium" style="padding:6px 23px 6px 0px;" src= "img/integrations/selenium.png">
 
-or many more...
+<br clear="left"/>
+
+
+and many more...
+
 
 
 
