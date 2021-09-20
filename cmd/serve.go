@@ -106,11 +106,17 @@ var serveCmd = &cobra.Command{
 
 		// sets the interceptors
 		var rs []interceptors.Interceptor
-		viper.UnmarshalKey("interceptors", &rs)
+		viper.UnmarshalKey("interceptions", &rs)
+
+		// Handle both, interceptions and interceptors
+		if len(rs) == 0 {
+			viper.UnmarshalKey("interceptors", &rs)
+		}
+
 		if rs != nil {
 			// validates the interceptors
 			if ok, errs := interceptors.ValidateAll(rs); !ok || len(errs) > 0 {
-				log.Fatal("Your config file has invalid interceptors:", errs)
+				log.Fatal("Your config file has invalid interceptions:", errs)
 			}
 
 			server.Interceptors = rs
