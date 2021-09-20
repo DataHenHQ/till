@@ -49,6 +49,7 @@ and many more...
     * [Request Logging](#request-logging)
     * [HTTP Caching](#http-caching)
     * [Global ID (GID)](#global-id-gid)
+    * [Request Interceptions](#request-interceptions)
 * [How DataHen Till works](#how-datahen-till-works)
 * [Installation](#installation)
 * [Certificate Authority (CA) Certificates](#certificate-authority-ca-certificates)
@@ -152,6 +153,16 @@ You can selectively choose whether to use a particular cached content or not by 
 Till uses [DataHen Platform](https://www.datahen.com/platform)'s convention of marking every unique request with a signature (we call this the Global ID or GID for short). Think of it like a Checksum of the actual request. 
 
 Anytime your scraper sends a request through Till, it will return a response with the header `X-DH-GID` that contains the GID. This GID allows you to easily troubleshoot requests when you need to look up specific requests in the log, or contents in the cache.
+
+## [Request Interceptions](https://till.datahen.com/docs/request-interception)
+Till can intercept any HTTP request of your choice, and replace with any HTTP response. 
+
+The following are some examples of useful scenarios:
+
+- Ignoring Google Analytics javascript
+- Ignoring images or other files
+- Replacing (stubbing) an API call with a different response
+- Restricting your scraper to only certain URL patterns.
 
 
 # How DataHen Till works
