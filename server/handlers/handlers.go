@@ -7,19 +7,22 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/DataHenHQ/till/internal/tillclient"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
-	"github.com/unrolled/render"
+	"github.com/foolin/goview"
 	"github.com/volatiletech/null/v8"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var (
-	// rend is html/json/xml renderer
-	Rend *render.Render
+	Renderer *goview.ViewEngine
 
 	CurrentInstance *tillclient.Instance
 
@@ -28,6 +31,8 @@ var (
 	InstanceName string
 
 	LoggerConfig logger.Config
+
+	lp = message.NewPrinter(language.English)
 )
 
 func SetEmbeddedTemplates(e *embed.FS) {
@@ -36,6 +41,9 @@ func SetEmbeddedTemplates(e *embed.FS) {
 	templateFunc := template.FuncMap{
 		"LoggerConfig": func() logger.Config {
 			return LoggerConfig
+		},
+		"InstanceName": func() string {
+			return InstanceName
 		},
 		"jsonToHeader": func(nb null.Bytes) (h http.Header) {
 
@@ -94,6 +102,29 @@ func SetEmbeddedTemplates(e *embed.FS) {
 		"intToTime": func(i int64) time.Time {
 			return time.Unix(0, i)
 		},
+		"intToBytes": func(b int64) string {
+			const unit = 1000
+			if b < unit {
+				return fmt.Sprintf("%d B", b)
+			}
+			div, exp := int64(unit), 0
+			for n := b / unit; n >= unit; n /= unit {
+				div *= unit
+				exp++
+			}
+			return fmt.Sprintf("%.2f %cB",
+				float64(b)/float64(div), "kMGTPE"[exp])
+		},
+		"ifThenElse": func(navinf interface{}, currentNav string, truecond string, falsecond string) string {
+			nav, _ := navinf.(string)
+			if nav == currentNav {
+				return truecond
+			}
+			return falsecond
+		},
+		"localizeInt": func(i int64) string {
+			return lp.Sprintf("%d\n", i)
+		},
 		"boolval": func(b *bool) bool {
 			return *b
 		},
@@ -108,6 +139,18 @@ func SetEmbeddedTemplates(e *embed.FS) {
 
 			return sha[1][0:5]
 		},
+		"isReqSuccess": func(code int64) (success bool) {
+			switch {
+			case code >= 200 && code <= 299:
+				return true
+			case code >= 300 && code <= 399:
+				return true
+			case code == 404:
+				return true
+			default:
+				return false
+			}
+		},
 		// converts url into relative path
 		"relativepath": func(urlstr string) string {
 			u, err := url.Parse(urlstr)
@@ -118,6 +161,49 @@ func SetEmbeddedTemplates(e *embed.FS) {
 			u.Host = ""
 			u.User = nil
 			return u.String()
+		},
+		// get the basepath of a url, basically the last item on the url
+		"basepath": func(urlstr string) string {
+			u, err := url.Parse(urlstr)
+			if err != nil {
+				return ""
+			}
+
+			return path.Base(u.Path)
+		},
+		// converts url into relative path
+		"basepathPlusQ": func(urlstr string) string {
+			u, err := url.Parse(urlstr)
+			if err != nil {
+				return ""
+			}
+			u.Scheme = ""
+			u.Host = ""
+			u.User = nil
+			rp := u.String()
+			ss := strings.Split(rp, "/")
+			out := ss[len(ss)-1]
+			if len(out) < 1 {
+				out = "/"
+			}
+			return out
+		},
+		"basepathPlusQOrHost": func(urlstr string) string {
+			u, err := url.Parse(urlstr)
+			if err != nil {
+				return ""
+			}
+			u.Scheme = ""
+			host := u.Host
+			u.Host = ""
+			u.User = nil
+			rp := u.String()
+			ss := strings.Split(rp, "/")
+			out := ss[len(ss)-1]
+			if len(out) < 1 {
+				out = host
+			}
+			return out
 		},
 		// get hostname and port
 		"hostname": func(urlstr string) string {
@@ -180,19 +266,29 @@ func SetEmbeddedTemplates(e *embed.FS) {
 		},
 	}
 
-	Rend = render.New(render.Options{
-		Extensions: []string{".tmpl", ".html"},
-		FileSystem: &render.EmbedFileSystem{
-			FS: *e,
-		},
-		Funcs: []template.FuncMap{templateFunc},
+	gvConfig := goview.Config{
+		Root:         "templates",
+		Extension:    ".html",
+		Master:       "layouts/master",
+		DisableCache: false,
+		Funcs:        templateFunc,
+	}
+
+	Renderer = goview.New(gvConfig)
+
+	// set the filehandler for goview to use embedded FS
+	Renderer.SetFileHandler(func(config goview.Config, tmpl string) (string, error) {
+		path := filepath.Join(config.Root, tmpl)
+		bytes, err := e.ReadFile(path + config.Extension)
+		return string(bytes), err
 	})
 
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	Rend.HTML(w, http.StatusOK, "index", map[string]interface{}{
-		"Instance":            InstanceName,
+	Renderer.Render(w, http.StatusOK, "index", map[string]interface{}{
+		"title":               "Home",
+		"tab":                 "home",
 		"Requests":            CurrentInstance.GetRequests() + int64(*StatMu.Requests),
 		"FailedRequests":      CurrentInstance.GetFailedRequests() + int64(*StatMu.FailedRequests),
 		"SuccessfulRequests":  CurrentInstance.GetSuccessfulRequests() + int64(*StatMu.SuccessfulRequests),
@@ -200,4 +296,5 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"CacheHits":           CurrentInstance.GetCacheHits() + int64(*StatMu.CacheHits),
 		"CacheSets":           CurrentInstance.GetCacheSets() + int64(*StatMu.CacheSets),
 	})
+
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"time"
@@ -31,6 +32,12 @@ func NewUIServer(port string, i *tillclient.Instance) (s *UIServer, err error) {
 
 	// wildcard for content, so that URL path is similar to original request
 	r.PathPrefix("/requests/{rid}/content/").HandlerFunc(handlers.RequestContentShowHandler)
+
+	// serve static assets
+	var rawPublicFs = fs.FS(embeddedAssets)
+	assetsFs, err := fs.Sub(rawPublicFs, "public/build")
+	fs := http.FileServer(http.FS(assetsFs))
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fs))
 
 	s = &UIServer{
 		server: &http.Server{

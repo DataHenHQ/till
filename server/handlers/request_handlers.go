@@ -82,7 +82,9 @@ func RequestIndexHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("error on requests", err)
 	}
 
-	Rend.HTML(w, http.StatusOK, "requests/index", map[string]interface{}{
+	Renderer.Render(w, http.StatusOK, "requests/index", map[string]interface{}{
+		"title":      "Request Log",
+		"tab":        "requests",
 		"Items":      is,
 		"Pagination": p,
 		"CurrentURL": r.URL.RequestURI(),
@@ -99,7 +101,8 @@ func RequestShowHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("error on requests", err)
 	}
 
-	Rend.HTML(w, http.StatusOK, "requests/show", map[string]interface{}{
+	Renderer.Render(w, http.StatusOK, "requests/show", map[string]interface{}{
+		"tab":  "requests",
 		"Item": i,
 	})
 }

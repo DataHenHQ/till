@@ -7,6 +7,7 @@ require (
 	github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b
 	github.com/DataHenHQ/tillup v0.0.0-20210816152225-9a21309dd7b8
 	github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c
+	github.com/foolin/goview v0.3.0 // indirect
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -16,4 +17,5 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
+	golang.org/x/text v0.3.7 // indirect
 )

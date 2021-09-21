@@ -40,6 +40,10 @@ var (
 	// content holds our static web server content.
 	//go:embed templates/*
 	embeddedTemplates embed.FS
+
+	// content holds our assets content
+	//go:embed public/build/*
+	embeddedAssets embed.FS
 )
 
 func validateInstance() (ok bool, i *tillclient.Instance) {

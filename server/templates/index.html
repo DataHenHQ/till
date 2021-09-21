@@ -1,18 +1,60 @@
-<h1>DataHen Till</h1>
-<p>
-  <a href="/">Home</a>
-  {{if not LoggerConfig.Disabled}}
-    &bull; 
-    <a href="/requests">Request Log</a>
-  {{end}}
-</p>
+{{define "content"}}
+<div>
+  <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Total Requests
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{ localizeInt .Requests}}
+      </dd>
+    </div>
+
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Successful Requests
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{localizeInt .SuccessfulRequests}}
+      </dd>
+    </div>
+
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Failed Requests
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{localizeInt .FailedRequests}}
+      </dd>
+    </div>
+
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Intercepted Requests
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{localizeInt .InterceptedRequests}}
+      </dd>
+    </div>
+
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Cache Hits
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{localizeInt .CacheHits}}
+      </dd>
+    </div>
 
 
-<h2>Instance</h2>
-<p>Instance Name: {{.Instance}}</p>
-<p>Requests: {{.Requests}}</p>
-<p>Successful Requests: {{.SuccessfulRequests}}</p>
-<p>Failed Requests: {{.FailedRequests}}</p>
-<p>Intercepted Requests: {{.InterceptedRequests}}</p>
-<p>Cache Hits: {{.CacheHits}}</p>
-<p>Cache Sets: {{.CacheSets}}</p>
+    <div class="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+      <dt class="text-sm font-medium text-gray-500 truncate">
+        Cache Sets
+      </dt>
+      <dd class="mt-1 text-3xl font-semibold text-gray-900">
+        {{localizeInt .CacheSets}}
+      </dd>
+    </div>
+  </dl>
+</div>
+{{end}}

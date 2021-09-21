@@ -1,150 +1,246 @@
-<h1>DataHen Till</h1>
-<p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
 
-<h2>Request Log</h2>
+{{define "content"}}
+<div class="flex flex-col">
+  {{template "filter_list" .}}
+  
+  {{template "table_nav" .}}
+  
+  <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+    <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+      <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="pl-2 pr-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" title="Response Status Code">
+                STATUS
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" title="Method" >
+                Method
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" colspan="2" >
+                Name
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" title="Global ID">
+                GID
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" title="Session ID">
+                SID
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                CACHE
+              </th>
+              
+              <th scope="col" class="px-1 py-2 text-right text-xs font-medium text-gray-700 uppercase tracking-wider" title="Response Content Length">
+                Size
+              </th>
+              <th scope="col" class="px-1 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Timestamp
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {{range $i, $item := .Items}}
+              <tr>
+                
+                <td class="pl-2 pr-1 py-2 whitespace-nowrap text-sm {{if isReqSuccess $item.ResponseStatusCode.Int64 }}text-gray-700{{else}}text-red-500{{end}}" title="{{$item.ResponseStatus.String}}">
+                  {{if $item.ResponseStatusCode.Valid }}
+                    <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "code" $item.ResponseStatusCode.Int64 }}'>{{$item.ResponseStatusCode.Int64}}</a>
+                    <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "code"  (printf "!%d" $item.ResponseStatusCode.Int64) }}' title="exclude {{$item.ResponseStatusCode.Int64}} status">!</a>
+                  {{end}}
+                </td>
+                
+                <td class="px-1 py-2 whitespace-nowrap text-sm text-left {{if $item.ResponseStatus.Valid }}{{if isReqSuccess $item.ResponseStatusCode.Int64 }}text-gray-700{{else}}text-red-500{{end}}{{else}}text-gray-400{{end}}">
+                  <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "method" $item.RequestMethod }}'>{{$item.RequestMethod}}</a>
+                </td>
+                <td class="pl-0 pr-0 py-2 whitespace-nowrap text-sm {{if $item.ResponseStatus.Valid }}{{if isReqSuccess $item.ResponseStatusCode.Int64 }}text-gray-700{{else}}text-red-500{{end}}{{else}}text-gray-400{{end}}">
+                  {{if $item.ResponseStatusCode.Valid }}
+                  <a class="" href="/requests/{{$item.Rid}}/content{{relativepath $item.RequestURL}}" title="View Response Content" style="text-decoration: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 border-b border-transparent hover:border-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </a>
+                  {{end}}
+                </td>
+                <td class="px-1 pr-2 py-2 whitespace-nowrap text-sm {{if $item.ResponseStatus.Valid }}{{if isReqSuccess $item.ResponseStatusCode.Int64 }}text-gray-700{{else}}text-red-500{{end}}{{else}}text-gray-400{{end}}">
+                  <a class="border-b border-transparent hover:border-gray-300" href="/requests/{{.Rid}}" title="{{$item.RequestURL}}" >{{printf "%.120s" (basepathPlusQOrHost $item.RequestURL)}}</a>
+                </td>
+                <td class="px-1 py-2 whitespace-nowrap text-sm text-gray-700">
+                  <a class="border-b border-transparent hover:border-gray-300" href='/requests?gid={{ .Gid }}' title="{{.Gid}}">{{shortGID .Gid}}</a>
+                </td>
+                <td class="px-1 py-2 whitespace-nowrap text-sm text-gray-700">
+                  <a class="border-b border-transparent hover:border-gray-300" href='/requests?session_id={{ .SessionID.String }}' title="{{.SessionID.String}}">{{.SessionID.String}}</a>
+                </td>
+                <td class="px-1 py-2 whitespace-nowrap text-sm text-gray-700">
+                  {{if $item.CacheHit -}}
+                  <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "cache" "HIT" }}'>HIT</a>
+                  {{- else -}}
+                  <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "cache" "MISS" }}'>MISS</a>
+                  {{- end}}
+                </td>
+                
+                
+                <td class="px-1 py-2 whitespace-nowrap text-right text-sm text-gray-700">
+                  {{if $item.ResponseContentLength.Valid }}
+                    <span>{{intToBytes $item.ResponseContentLength.Int64}}</span>
+                    <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "from_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="from {{intToBytes $item.ResponseContentLength.Int64}}">F</a>
+                    
+                    <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "to_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="to {{intToBytes $item.ResponseContentLength.Int64}}">T</a>
+                  {{end}}
+                </td>
+                <td class="px-1 py-2 whitespace-nowrap text-sm text-gray-700">
+                  {{(intToTime $item.Timestamp).Format "2006-01-02 15:04:05"}}
+                  <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "from_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="from time">F</a>
+                  <a class="border-b border-transparent hover:border-gray-300" href='{{appendQueryString $.CurrentURL "to_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="to time">T</a>
+                </td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {{template "table_nav" .}}
 
-{{if not .Filter.IsZero}}
-<table style="text-align: left;">
-  <tr>
-    <th colspan="3">Filters:</th>
-  </tr>
-  {{if .Filter.Gid }}
-    <tr>
-      <th>GID</th>
-      <td>{{.Filter.Gid}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "gid" ""}}' title="remove filter">X</a></td>
-    </tr>
+</div>
+{{end}}
+
+{{define "table_nav"}}
+<!-- This example requires Tailwind CSS v2.0+ -->
+<nav class=" py-2 px-4 flex items-center justify-between sm:px-0">
+  {{if .Pagination.StartAfter}}
+  <div class="-mt-px w-0 flex-1 flex">
+    <a href='{{appendQueryString .CurrentURL "start_after" .Pagination.StartAfter "end_before" ""}}' class="border-2 border-transparent py-1 px-1 pr-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+      <!-- Heroicon name: solid/arrow-narrow-left -->
+      <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+      Newer
+    </a>
+  </div>
   {{end}}
-  {{if .Filter.SessionID }}
-    <tr>
-      <th>Session ID</th>
-      <td>{{.Filter.SessionID}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "session_id" ""}}' title="remove filter">X</a></td>
-    </tr>
+  
+  {{if .Pagination.EndBefore}}
+  <div class="-mt-px w-0 flex-1 flex justify-end">
+    <a href='{{appendQueryString .CurrentURL "end_before" .Pagination.EndBefore "start_after" "" }}' class="border-2 border-transparent py-1 px-1 pl-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+      Older
+      <!-- Heroicon name: solid/arrow-narrow-right -->
+      <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </a>
+  </div>
   {{end}}
-  {{if .Filter.CacheHit }}
-    <tr>
-      <th>Cache</th>
-      <td>{{if (boolval .Filter.CacheHit)}}HIT{{else}}MISS{{end}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "cache" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if .Filter.RequestMethod }}
-    <tr>
-      <th>Method</th>
-      <td>{{.Filter.RequestMethod}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "method" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if .Filter.ResponseStatusCode }}
-    <tr>
-      <th>Code</th>
-      <td>{{.Filter.ResponseStatusCode}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "code" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if not .Filter.FromTime.IsZero }}
-    <tr>
-      <th>From Time</th>
-      <td>{{.Filter.FromTime}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "from_time" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if not .Filter.ToTime.IsZero }}
-    <tr>
-      <th>To Time</th>
-      <td>{{.Filter.ToTime}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "to_time" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if .Filter.FromResponseContentLength }}
-    <tr>
-      <th>From Content Length</th>
-      <td>{{.Filter.FromResponseContentLength}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "from_content_length" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-  {{if .Filter.ToResponseContentLength }}
-    <tr>
-      <th>To Content Length</th>
-      <td>{{.Filter.ToResponseContentLength}}</td>
-      <td><a href='{{appendQueryString .CurrentURL "to_content_length" ""}}' title="remove filter">X</a></td>
-    </tr>
-  {{end}}
-</table>
-<hr/>
+</nav>
+
 {{end}}
 
 
-{{if .Pagination.StartAfter}}
-<p><a href='{{appendQueryString .CurrentURL "start_after" .Pagination.StartAfter "end_before" ""}}'>Newer</a></p>
-{{end}}
-
-
-<table>
-  <tr style="text-align: left;">
-    <th title="Global ID">GID</th>
-    <th title="Session ID">SID</th>
-    <th>CACHE</th>
-    <th>Method</th>
-    <th colspan="2">URL</th>
-    <th title="Response Status Code">Status</th>
-    <th title="Response Content Length">ContentLength</th>
-    <th>Timestamp</th>
-  </tr>
-
-  
-  {{range $i, $item := .Items}}
-    <tr>
-      <td>
-        <a href='/requests?gid={{ .Gid }}' title="{{.Gid}}">{{shortGID .Gid}}</a>
-      </td>
-      <td>
-        <a href='/requests?session_id={{ .SessionID.String }}' title="{{.SessionID.String}}">{{.SessionID.String}}</a>
-      </td>
-      <td>
-        {{if $item.CacheHit -}}
-        <a href='{{appendQueryString $.CurrentURL "cache" "HIT" }}'>HIT</a>
-        {{- else -}}
-        <a href='{{appendQueryString $.CurrentURL "cache" "MISS" }}'>MISS</a>
-        {{- end}}
-      </td>
-      <td>
-        <a href='{{appendQueryString $.CurrentURL "method" $item.RequestMethod }}'>{{$item.RequestMethod}}</a>
-      </td>
-      <td><a href="/requests/{{.Rid}}" title="View Request Info" style="text-decoration: none;">	&#9432;</a></td>
-      <td>
-        {{if $item.ResponseStatus.Valid }}
-          <a href="/requests/{{$item.Rid}}/content/{{relativepath $item.RequestURL}}" >{{printf "%.120s" $item.RequestURL}}</a>
-        {{else}}
-        {{printf "%.120s" $item.RequestURL}}
-        {{end}}
-      </td>
-      <td title="{{$item.ResponseStatus.String}}">
-        {{if $item.ResponseStatusCode.Valid }}
-          <a href='{{appendQueryString $.CurrentURL "code" $item.ResponseStatusCode.Int64 }}'>{{$item.ResponseStatusCode.Int64}}</a>
-          <a href='{{appendQueryString $.CurrentURL "code"  (printf "!%d" $item.ResponseStatusCode.Int64) }}' title="exclude {{$item.ResponseStatusCode.Int64}} status">!</a>
-        {{end}}
-      </td>
-      <td>
-        {{if $item.ResponseContentLength.Valid }}
-          {{$item.ResponseContentLength.Int64}}
-          <a href='{{appendQueryString $.CurrentURL "from_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="from content length">F</a>
-          <a href='{{appendQueryString $.CurrentURL "to_content_length" (printf "%d" $item.ResponseContentLength.Int64 ) }}' title="to content length">T</a>
-        {{end}}
-      </td>
-      <td>
-        {{(intToTime $item.Timestamp).Format "2006-01-02 15:04:05"}}
-        <a href='{{appendQueryString $.CurrentURL "from_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="from time">F</a>
-        <a href='{{appendQueryString $.CurrentURL "to_time" ((intToTime $item.Timestamp).Format "2006-01-02T15:04:05Z07:00") }}' title="to time">T</a>
-      </td>
-    </tr>
+{{define "filter_list"}}
+  {{if not .Filter.IsZero}}
+    <div class="flex flex-wrap mt-4">
+      <div class="text-sm  py-1 mx-1 mb-1 text-gray-500">FILTERS</div>
+      <div class="text-sm  py-1 mx-1 mb-1 text-gray-500">|</div>
+      {{if .Filter.Gid }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          GID: {{.Filter.Gid}}    
+          <a href='{{appendQueryString .CurrentURL "gid" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if .Filter.SessionID }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          Session ID: {{.Filter.SessionID}}    
+          <a href='{{appendQueryString .CurrentURL "session_id" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if .Filter.CacheHit }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          Cache: {{if (boolval .Filter.CacheHit)}}HIT{{else}}MISS{{end}}    
+          <a href='{{appendQueryString .CurrentURL "cache" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if .Filter.RequestMethod }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          Method: {{.Filter.RequestMethod}} 
+          <a href='{{appendQueryString .CurrentURL "method" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if .Filter.ResponseStatusCode }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          Status: {{.Filter.ResponseStatusCode}} 
+          <a href='{{appendQueryString .CurrentURL "code" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      
+      {{if .Filter.FromResponseContentLength }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          From Size: {{intToBytes .Filter.FromResponseContentLength}} 
+          <a href='{{appendQueryString .CurrentURL "from_content_length" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if .Filter.ToResponseContentLength }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          To Size: {{intToBytes .Filter.ToResponseContentLength}} 
+          <a href='{{appendQueryString .CurrentURL "to_content_length" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if not .Filter.FromTime.IsZero }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          From Time: {{.Filter.FromTime}} 
+          <a href='{{appendQueryString .CurrentURL "from_time" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      {{if not .Filter.ToTime.IsZero }}
+        <span class="inline-flex rounded-md items-center py-0.5 pl-2.5 mx-1 mb-1 pr-1 text-sm font-medium bg-white text-gray-700 border border-solid border-gray-300 shadow">
+          To Time: {{.Filter.ToTime}} 
+          <a href='{{appendQueryString .CurrentURL "to_time" ""}}' title="remove filter" class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-500 focus:outline-none focus:bg-gray-500 focus:text-white">
+            <span class="sr-only">Remove</span>
+            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+            </svg>
+          </a>
+        </span>
+      {{end}}
+      
+    </div>
   {{end}}
-  
-
-</table>
-
-
-{{if .Pagination.EndBefore}}
-<p><a href='{{appendQueryString .CurrentURL "end_before" .Pagination.EndBefore "start_after" "" }}'>Older</a></p>
 {{end}}

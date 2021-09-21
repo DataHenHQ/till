@@ -1,7 +1,36 @@
-<h1>DataHen Till</h1>
-<p><a href="/">Home</a> &bull; <a href="/requests">Request Log</a></p>
+{{define "content"}}
+{{template "heading" .}}
+<div class="">
+  <div class="mt-5">{{template "info" .}}</div>
+  <div class="mt-5">{{template "session" .}}</div>
+  <div class="mt-5">{{template "request" .}}</div>
+  <div class="mt-5">{{template "response" .}}</div>
+  <div class="mt-5">{{template "config" .}}</div>
+</div>
+{{end}}
 
+{{define "old"}}
+<div class="flex flex-wrap -mx-2 overflow-hidden md:-mx-2">
+  
 
+  <div class="my-2 px-2 w-full overflow-hidden md:my-2 md:px-2 lg:w-7/12">
+
+    {{template "info" .}}
+    {{template "session" .}}
+    {{template "request" .}}
+    {{template "response" .}}
+  </div>
+
+  <div class="my-2 px-2 w-full overflow-hidden md:my-2 md:px-2 lg:w-5/12">
+
+    {{template "config" .}}
+    
+  </div>
+
+</div>
+{{end}}
+
+{{define "content2"}}
 
 <table style="text-align: left; vertical-align: top;">
   <tr><th colspan="2"><h2>Info:</h2></th></tr>
@@ -10,7 +39,7 @@
   <tr><th title="Global ID of the request">GID</th><td>{{.Item.Gid}}</td></tr>
   <tr><th title="Session ID of the request">SID</th><td>{{.Item.SessionID.String}}</td></tr>
   <tr><th>Timestamp</th><td>{{(intToTime .Item.Timestamp).Format "2006-01-02 15:04:05"}}</td></tr>
-
+                                                                                                                                                                                                                                                                                                                
   <tr><th colspan="2">&nbsp;</th></tr>
   <tr><th colspan="2"><h2>Config:</h2></th></tr>
   
@@ -20,8 +49,8 @@
   <tr><th>UseProxy</th><td>{{$pconf.UseProxy}}</td></tr>
   <tr><th>StickyCookies</th><td>{{$pconf.StickyCookies}}</td></tr>
   <tr><th>StickyUA</th><td>{{$pconf.StickyUA}}</td></tr>
-  <tr><th>IgnoreInterceptors</th><td>{{$pconf.IgnoreInterceptors}}</td></tr>
-  <tr><th>IgnoreAllInterceptors</th><td>{{$pconf.IgnoreAllInterceptors}}</td></tr>
+  <tr><th>IgnoreInterceptions</th><td>{{$pconf.IgnoreInterceptions}}</td></tr>
+  <tr><th>IgnoreAllInterceptions</th><td>{{$pconf.IgnoreAllInterceptions}}</td></tr>
   <tr><th>CacheFreshness</th><td>{{$pconf.CacheFreshness}}</td></tr>
   <tr><th>CacheServeFailures</th><td>{{$pconf.CacheServeFailures}}</td></tr>
 
@@ -108,3 +137,428 @@
 
 {{end}}
 </table>
+{{end}}
+
+
+{{define "info"}}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div class="px-4 py-5 sm:px-6">
+    <h3 class="text-lg leading-6 font-medium text-gray-900">
+      Request Info
+    </h3>
+    <!-- <p class="mt-1 max-w-2xl text-sm text-gray-500">
+      Request Info
+    </p> -->
+  </div>
+  <div class="border-t border-gray-200 px-4 sm:px-6">   
+    <div class="">
+      <div class="py-3">
+        <dl class="">
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              GID
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.Gid}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Request ID
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.Rid}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Cache
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{if .Item.CacheHit}}HIT{{else}}MISS{{end}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Session ID
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.SessionID.String}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Timestamp
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              
+              {{(intToTime .Item.Timestamp).Format "2006-01-02 15:04:05"}}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+
+
+
+{{end}}
+
+{{define "config"}}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div class="px-4 py-5 sm:px-6">
+    <h3 class="text-lg leading-6 font-medium text-gray-900">
+      Config
+    </h3>
+    <!-- <p class="mt-1 max-w-2xl text-sm text-gray-500">
+      Request Info
+    </p> -->
+  </div>
+  <div class="border-t border-gray-200 px-4 sm:px-6">   
+    <div class="">
+      <div class="py-3">
+        {{$pconf := (jsonToPageConfig .Item.PageConfig )}}
+        <dl class="">
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              ForceUA
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.ForceUA}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              UaType
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.UaType}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              UseProxy
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.UseProxy}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              StickyCookies
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.StickyCookies}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              StickyUA
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.StickyUA}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              IgnoreInterceptions
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{ range $value := $pconf.IgnoreInterceptions }} <span>{{$value}}</span> {{end}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              IgnoreAllInterceptions
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.IgnoreAllInterceptions}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              CacheFreshness
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.CacheFreshness}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              CacheServeFailures
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{$pconf.CacheServeFailures}}
+            </dd>
+          </div>
+          
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{end}}
+
+{{define "session"}}
+  {{if .Item.Session.Valid}}
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">
+        Session
+      </h3>
+    </div>
+    <div class="border-t border-gray-200 px-4 sm:px-6">   
+      <div class="">
+        <div class="py-3">
+          {{$sess := (jsonToSession .Item.Session )}}
+          <dl class="">
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Session ID
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{$sess.ID}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                User Agent
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{$sess.UserAgent}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Proxy IP
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{$sess.ProxyURL}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Cookie Jar
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 overflow-x-auto">
+                <table class="table-auto">
+                  {{ range $key, $values := $sess.Cookies}}
+                  <tr>
+                    <th class="align-top">{{ $key }}</th>
+                    <td class="align-top">{{ range $value := $values }} {{$value}} {{end}}</td>
+                  </tr>
+                  {{ end }}
+                </table>
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                CreatedAt
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{$sess.CreatedAt.Format "2006-01-02 15:04:05"}}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+{{end}}
+
+{{define "request"}}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div class="px-4 py-5 sm:px-6">
+    <h3 class="text-lg leading-6 font-medium text-gray-900">
+      Request
+    </h3>
+  </div>
+  <div class="border-t border-gray-200 px-4 sm:px-6">   
+    <div class="">
+      <div class="py-3">
+        <dl class="">
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Method
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.RequestMethod}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              URL
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.RequestURL}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Header
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 overflow-x-auto">
+              <table class="table-auto">
+                {{ range $key, $values := (jsonToHeader .Item.RequestHeader )}}
+                <tr>
+                  <th class="align-top text-left">{{ $key }}</th>
+                  <td class="align-top text-left">{{ range $value := $values }} {{$value}} {{end}}</td>
+                </tr>
+                {{ end }}
+              </table>
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              ContentLength
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{.Item.RequestContentLength}}
+            </dd>
+          </div>
+          <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-gray-500">
+              Body
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{if .Item.RequestBody.Valid}}{{printf "%s" .Item.RequestBody.Bytes}}{{end}}
+            </dd>
+          </div>
+          
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "response"}}
+  {{if .Item.ResponseStatus.Valid }}
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">
+        Response
+      </h3>
+    </div>
+    <div class="border-t border-gray-200 px-4 sm:px-6">   
+      <div class="">
+        <div class="py-3">
+          <dl class="">
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Status
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{.Item.ResponseStatus.String}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Proto
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{.Item.ResponseProto.String}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Header
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2  overflow-x-auto">
+                <table class="table-auto">
+                  {{ range $key, $values := (jsonToHeader .Item.ResponseHeader )}}
+                  <tr>
+                    <th class="align-top text-left">{{ $key }}</th>
+                    <td class="align-top text-left">{{ range $value := $values }} {{$value}} {{end}}</td>
+                  </tr>
+                  {{ end }}
+                </table>
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                ContentLength
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{if .Item.ResponseContentLength.Valid}}{{.Item.ResponseContentLength.Int64}}{{end}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                TransferEncoding
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {{ range $value := (jsonToSlice .Item.ResponseTransferEncoding) }} {{$value}} {{end}}
+              </dd>
+            </div>
+            <div class="py-2 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt class="text-sm font-medium text-gray-500">
+                Body 
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                
+                <a href="/requests/{{.Item.Rid}}/content/{{relativepath .Item.RequestURL}}" class="inline-flex items-center pl-1 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 border-b border-transparent hover:border-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="ml-0">Content</span>
+                </a>
+              </dd>
+            </div>
+            
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+{{end}}
+
+{{define "heading"}}
+<!-- This example requires Tailwind CSS v2.0+ -->
+<div>
+  <div>
+    
+    <nav class="flex" aria-label="Breadcrumb">
+      <ol role="list" class="flex items-center space-x-4">
+        <li>
+          <div class="flex">
+            <a href="/requests" class="text-sm font-medium text-gray-500 hover:text-gray-700">Request Log</a>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <!-- Heroicon name: solid/chevron-right -->
+            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            <span class="ml-4 text-sm font-medium text-gray-700">{{.Item.Rid}}</span>
+          </div>
+        </li>
+        
+      </ol>
+    </nav>
+  </div>
+  <div class="mt-2 md:flex md:items-center md:justify-between">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        {{.Item.Rid}}
+      </h2>
+    </div>
+    <div class="mt-4 flex-shrink-0 flex md:mt-0 md:ml-4">
+      <a href="/requests/{{.Item.Rid}}/content/{{relativepath .Item.RequestURL}}" class="inline-flex items-center pl-1 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 border-b border-transparent hover:border-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span class="ml-0">Content</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{{end}}

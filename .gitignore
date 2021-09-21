@@ -21,3 +21,5 @@ dist
 
 node_modules
 __pycache__
+
+server/public/build/*
