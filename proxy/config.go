@@ -20,9 +20,9 @@ type PageConfig struct {
 	StickyCookies bool
 	StickyUA      bool
 
-	// Interceptors feature
-	IgnoreInterceptors    []string
-	IgnoreAllInterceptors bool
+	// Interceptions feature
+	IgnoreInterceptions    []string
+	IgnoreAllInterceptions bool
 
 	// Cache feature
 	CacheFreshness     freshness.Type
@@ -47,9 +47,9 @@ func generatePageConfig(req *http.Request) (pconf *PageConfig) {
 		StickyCookies: true,
 		StickyUA:      true,
 
-		// Interceptors feature
-		IgnoreInterceptors:    []string{},
-		IgnoreAllInterceptors: false,
+		// Interceptions feature
+		IgnoreInterceptions:    []string{},
+		IgnoreAllInterceptions: false,
 
 		// Cache feature
 		CacheFreshness:     CacheConfig.Freshness,

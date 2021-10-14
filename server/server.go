@@ -15,7 +15,7 @@ import (
 	"github.com/DataHenHQ/till/proxy"
 	"github.com/DataHenHQ/till/server/handlers"
 	"github.com/DataHenHQ/tillup/cache"
-	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/interceptions"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
 
@@ -29,7 +29,7 @@ var (
 	ProxyURLs      = []string{}
 	ProxyCount     = 0
 	DBPath         string
-	Interceptors   []interceptors.Interceptor
+	Interceptions  []interceptions.Interception
 	CacheConfig    cache.Config
 	LoggerConfig   logger.Config
 	SessionsConfig sessions.Config
@@ -72,7 +72,7 @@ func validateInstance() (ok bool, i *tillclient.Instance) {
 	curri = *i
 
 	// Set the features, etc for this instance
-	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptors, SessionsConfig, CacheConfig, LoggerConfig); err != nil {
+	if err := tillup.Init(i.GetFeatures(), ProxyURLs, DBPath, Interceptions, SessionsConfig, CacheConfig, LoggerConfig); err != nil {
 		log.Fatal(err)
 	}
 

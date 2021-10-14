@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/DataHenHQ/tillup/features"
-	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/interceptions"
 )
 
 func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
@@ -59,9 +59,9 @@ func HandleTunneling(sw http.ResponseWriter, sreq *http.Request) error {
 		return err
 	}
 
-	// If Interceptor is allowed and it matches
-	if features.Allow(features.Interceptors) {
-		if ok, in := interceptors.Matches(treq); ok && in != nil {
+	// If Interception is allowed and it matches
+	if features.Allow(features.Interceptions) {
+		if ok, in := interceptions.Matches(treq); ok && in != nil {
 			resp, err := in.CreateResponse()
 			if err != nil {
 				return err

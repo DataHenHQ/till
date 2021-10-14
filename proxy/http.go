@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/DataHenHQ/tillup/features"
-	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/interceptions"
 )
 
 // HandleHTTP proxies the request from source to target
@@ -29,9 +29,9 @@ func HandleHTTP(sw http.ResponseWriter, sreq *http.Request) error {
 		return err
 	}
 
-	// If Interceptor is allowed and it matches
-	if features.Allow(features.Interceptors) {
-		if ok, in := interceptors.Matches(sreq); ok && in != nil {
+	// If Interception is allowed and it matches
+	if features.Allow(features.Interceptions) {
+		if ok, in := interceptions.Matches(sreq); ok && in != nil {
 			resp, err := in.CreateResponse()
 			if err != nil {
 				return err

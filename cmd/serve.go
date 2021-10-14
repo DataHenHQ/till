@@ -9,7 +9,7 @@ import (
 	"github.com/DataHenHQ/till/proxy"
 	"github.com/DataHenHQ/till/server"
 	"github.com/DataHenHQ/tillup/cache"
-	"github.com/DataHenHQ/tillup/interceptors"
+	"github.com/DataHenHQ/tillup/interceptions"
 	"github.com/DataHenHQ/tillup/logger"
 	"github.com/DataHenHQ/tillup/sessions"
 	"github.com/DataHenHQ/useragent"
@@ -104,22 +104,22 @@ var serveCmd = &cobra.Command{
 		}
 		server.DBPath = datadir
 
-		// sets the interceptors
-		var rs []interceptors.Interceptor
+		// sets the interceptions
+		var rs []interceptions.Interception
 		viper.UnmarshalKey("interceptions", &rs)
 
-		// Handle both, interceptions and interceptors
+		// Handle both, interceptions and interceptions
 		if len(rs) == 0 {
-			viper.UnmarshalKey("interceptors", &rs)
+			viper.UnmarshalKey("interceptions", &rs)
 		}
 
 		if rs != nil {
-			// validates the interceptors
-			if ok, errs := interceptors.ValidateAll(rs); !ok || len(errs) > 0 {
+			// validates the interceptions
+			if ok, errs := interceptions.ValidateAll(rs); !ok || len(errs) > 0 {
 				log.Fatal("Your config file has invalid interceptions:", errs)
 			}
 
-			server.Interceptors = rs
+			server.Interceptions = rs
 		}
 
 		// Sets sessions related configurations
