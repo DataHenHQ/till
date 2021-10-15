@@ -2,8 +2,8 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   purge: [
-    './app/**/*.html',
-    './app/**/*.vue',
+    './server/templates/**/*.html',
+    './server/templates/**/*.vue',
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {

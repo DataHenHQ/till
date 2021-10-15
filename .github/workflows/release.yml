@@ -12,22 +12,41 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     container:
-      image: bepsays/ci-goreleaser:1.16.5
+      image: bepsays/ci-goreleaser:1.17.2
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       -
         name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
       - 
         name: Granting private modules access
         run: |
           git config --global url."https://${{ secrets.GO_MODULES_TOKEN }}:x-oauth-basic@github.com/DataHenHQ".insteadOf "https://github.com/DataHenHQ"
+
+      - 
+        name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      
+      - 
+        name: Install Yarn 
+        run: npm install -g yarn
+
+      - 
+        name: Yarn install
+        run: yarn install --frozen-lockfile
+
+      - 
+        name: Yarn build production
+        run: yarn run build:production
 
       -
         name: Run GoReleaser
