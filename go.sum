@@ -50,6 +50,8 @@ github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b h1:IRsyTwmpJhiql
 github.com/DataHenHQ/license v0.0.0-20210421182239-f7393536552b/go.mod h1:/9dbu45iCO7JnjZDR+Z5eK6OpU6D7fF7bS198VWG7mU=
 github.com/DataHenHQ/tillup v0.0.0-20211014162556-d351a42579da h1:zg07D2AnmkqL/jt+v6bQKPqH8l/Z33rAZaTqc0fCZ7c=
 github.com/DataHenHQ/tillup v0.0.0-20211014162556-d351a42579da/go.mod h1:6A68venbwWaWloquXxUINEix43/iNnGc5E0sRvgwPsA=
+github.com/DataHenHQ/tillup v0.0.0-20211019162626-e1b7912712c4 h1:rK2OmNaMd2XHBSAxcfYZdbRJK420Bm6lvJGrLdXLlYs=
+github.com/DataHenHQ/tillup v0.0.0-20211019162626-e1b7912712c4/go.mod h1:6A68venbwWaWloquXxUINEix43/iNnGc5E0sRvgwPsA=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c h1:BvenCGZnVg2fVd9VrlD3ijHCR4dIdYbIr4v3zAudweU=
 github.com/DataHenHQ/useragent v0.0.0-20210226181302-3735e350d96c/go.mod h1:rpV6pSits3VF8DkRnEkxmaVoTabhph2o/hTTX2aAwoE=
 github.com/GeertJohan/go.incremental v1.0.0/go.mod h1:6fAjUhbVuX1KcMD3c8TEgVUqmo4seqhv0i0kdATSkM0=
