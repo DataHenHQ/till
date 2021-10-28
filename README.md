@@ -186,7 +186,7 @@ The recommended way to install DataHen Till is by downloading one of the [standa
 
 You need to get your auth token to run Till.
 
-Get your token for FREE by signing up for an account at [till.datahen.com](https://till.datahen.com/login?type=signup).
+Get your token for FREE by signing up for an account at [till.datahen.com](https://till.datahen.com).
 
 
 ## Step 3: Start Till
