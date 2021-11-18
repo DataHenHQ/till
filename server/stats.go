@@ -45,6 +45,7 @@ func startRecurringStatUpdate() {
 		i, _, err := client.InstanceStats.Update(context.Background(), is)
 		if err != nil {
 			fmt.Printf("gotten error: %v\n", err)
+			continue
 		}
 
 		// set the current instance global var
