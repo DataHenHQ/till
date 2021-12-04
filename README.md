@@ -1,6 +1,7 @@
 
 <img align="left" width="150" style="padding:6px 23px 6px 0px;" src="img/till-logo.svg"> **DataHen Till** is a companion tool to your existing web scraper that instantly makes it scalable, maintainable, and more unblockable, with minimal code changes on your scraper. Integrates with any scraper in 5 minutes.
 
+[![Alt text](https://img.youtube.com/vi/D1VBVYTRo8g/0.jpg)](https://www.youtube.com/watch?v=D1VBVYTRo8g)
 
 Till was architected to follow best practices that [DataHen](https://www.datahen.com) has accumulated over the years of scraping at a massive scale.
 
